@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "outDir": "./dist",
+    "sourceMap": true,
+    "strict": true,
+    "lib": ["ES2022", "DOM"],
+    "target": "ES2022",
+    "moduleResolution": "node",
+    "module": "commonjs",
+    "baseUrl": "src",
+    "rootDirs": ["src"],
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "declaration": true
+  },
+  "include": ["src"]
+}
