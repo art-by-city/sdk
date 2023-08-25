@@ -26,10 +26,12 @@
   "engines": { "node": "~18.16.0" },
   "main": "index.js",
   "scripts": {
-    "build": "rimraf dist && tsc",
+    "build": "rimraf dist && npm run build:node && npm run build:web",
+    "build:node": "tsc --project tsconfig.node.json",
+    "build:web": "tsc --project tsconfig.web.json",
     "lint": "eslint .",
     "test": "mocha -r ts-node/register test/spec/**/*.ts",
-    "test:e2e": "mocha -r ts-node/register test/e2e/**/*.ts"
+    "test:e2e": "npm run build && mocha -r ts-node/register test/e2e/**/*.ts"
   },
   "devDependencies": {
     "@types/chai": "^4.3.5",

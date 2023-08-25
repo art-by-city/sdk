@@ -1,7 +1,11 @@
 export default class ArtByCity {
-  constructor(private message: string) {}
+  private messageBuffer!: Buffer
+
+  constructor(message: string) {
+    this.messageBuffer = Buffer.from(message)
+  }
 
   getMessage() {
-    return this.message
+    return this.messageBuffer.toString()
   }
 }
