@@ -4,10 +4,10 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Log Node Version
-        run: node -v
-      - name: Install Dependencies
+      - uses: actions/checkout@v3
+      - name: Install
         run: npm i
+      - name: Build
+        run: npm run build
       - name: Run ESLint
         run: npm run lint
