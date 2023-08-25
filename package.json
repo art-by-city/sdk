@@ -23,16 +23,21 @@
     "sdk",
     "art-by-city"
   ],
+  "engines": { "node": "~18.16.0" },
   "main": "index.js",
   "scripts": {
     "build": "rimraf dist && tsc",
+    "lint": "eslint .",
     "test": "mocha -r ts-node/register test/spec/**/*.ts",
     "test:e2e": "mocha -r ts-node/register test/e2e/**/*.ts"
   },
   "devDependencies": {
     "@types/chai": "^4.3.5",
     "@types/mocha": "^10.0.1",
+    "@typescript-eslint/eslint-plugin": "^6.4.1",
+    "@typescript-eslint/parser": "^6.4.1",
     "chai": "^4.3.8",
+    "eslint": "^8.47.0",
     "mocha": "^10.2.0",
     "rimraf": "^5.0.1",
     "ts-node": "^10.9.1",
