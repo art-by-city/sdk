@@ -23,6 +23,7 @@
     "sdk",
     "art-by-city"
   ],
+  "engines": { "node": "~18.16.0" },
   "main": "index.js",
   "scripts": {
     "build": "rimraf dist && tsc",
