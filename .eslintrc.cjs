@@ -6,7 +6,7 @@ module.exports = {
   // overrides: [{
   //   files: [ 'src/*.ts' ]
   // }],
-  ignorePatterns: ['dist/*'],
+  ignorePatterns: ['dist/*', 'bundles/*', 'webpack.config.js'],
   plugins: [ '@typescript-eslint' ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
