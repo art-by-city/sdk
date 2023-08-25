@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer'
+
 export default class ArtByCity {
   private messageBuffer!: Buffer
 
