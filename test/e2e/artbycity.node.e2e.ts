@@ -3,6 +3,7 @@ import { expect } from 'chai'
 import Arweave from 'arweave'
 
 import ArtByCity from '../../dist/node'
+import VerifiedCreators from '../../dist/node/legacy/verified-creators.json'
 
 describe('ArtByCity (Node)', () => {
   it('Constructs with default Arweave instance', () => {
@@ -16,5 +17,15 @@ describe('ArtByCity (Node)', () => {
     const abc = new ArtByCity(arweave)
 
     expect(abc.arweave).to.equal(arweave)
+  })
+
+  describe('Legacy Module', () => {
+    it('Gets verified creator addresses', () => {
+      const abc = new ArtByCity()
+
+      expect(abc.legacy.getVerifiedCreators())
+        .to
+        .equal(VerifiedCreators.production)
+    })
   })
 })

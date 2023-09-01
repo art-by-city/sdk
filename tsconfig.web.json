@@ -9,7 +9,8 @@
     "baseUrl": "src",
     "rootDirs": ["src"],
     "declaration": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "resolveJsonModule": true
   },
   "include": ["src"]
 }
