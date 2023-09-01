@@ -13,6 +13,6 @@ export default class ArtByCity {
   constructor(arweave?: Arweave, config?: ArtByCityConfig) {
     this.arweave = arweave || Arweave.init({})
     this.environment = config?.environment || 'production'
-    this.legacy = new ArtByCityLegacy(this.environment)
+    this.legacy = new ArtByCityLegacy(this.arweave, this.environment)
   }
 }

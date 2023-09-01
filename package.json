@@ -28,12 +28,13 @@
   },
   "main": "index.js",
   "scripts": {
+    "arlocal": "arlocal --hidelogs --persist --dbpath .db",
     "build": "rimraf dist && npm run build:node && npm run build:web",
     "build:node": "rimraf dist/node && tsc --project tsconfig.node.json",
     "build:web": "rimraf dist/web && tsc --project tsconfig.web.json",
     "bundle:tests": "rimraf bundles && webpack --config-name web-tests",
     "lint": "eslint .",
-    "test": "mocha -r ts-node/register test/spec/**/*.ts",
+    "test": "mocha -r ts-node/register test/spec/*.ts test/spec/**/*.ts",
     "test:e2e": "npm run build && mocha -r ts-node/register test/e2e/**/*.ts",
     "test:e2e:web": "npm run build:web && npm run bundle:tests && opener ./test/e2e/web-runner.html"
   },
@@ -42,6 +43,7 @@
     "@types/mocha": "^10.0.1",
     "@typescript-eslint/eslint-plugin": "^6.4.1",
     "@typescript-eslint/parser": "^6.4.1",
+    "arlocal": "^1.1.61",
     "chai": "^4.3.8",
     "eslint": "^8.47.0",
     "mocha": "^10.2.0",
@@ -55,6 +57,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "ardb": "^1.1.10",
     "arweave": "^1.14.4",
     "buffer": "^6.0.3"
   }

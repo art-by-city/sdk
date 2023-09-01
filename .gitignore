@@ -17,3 +17,6 @@ yarn-error.log*
 # build dirs
 dist/
 bundles/
+
+# arlocal db
+.db
