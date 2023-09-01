@@ -1,13 +1,20 @@
 import 'mocha'
 import { expect } from 'chai'
+import Arweave from 'arweave'
 
 import ArtByCity from '../../dist/node'
 
 describe('ArtByCity (Node)', () => {
-  it('Should pass test', () => {
-    const message = 'This is a test message!'
-    const abc = new ArtByCity(message)
+  it('Constructs with default Arweave instance', () => {
+    const abc = new ArtByCity()
 
-    expect(abc.getMessage()).to.equal(message)
+    expect(abc.arweave).to.be.an.instanceOf(Arweave)
+  })
+
+  it('Constructs given an Arweave instance', () => {
+    const arweave = Arweave.init({})
+    const abc = new ArtByCity(arweave)
+
+    expect(abc.arweave).to.equal(arweave)
   })
 })

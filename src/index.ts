@@ -1,13 +1,9 @@
-import { Buffer } from 'buffer'
+import Arweave from 'arweave'
 
 export default class ArtByCity {
-  private messageBuffer!: Buffer
+  public arweave!: Arweave
 
-  constructor(message: string) {
-    this.messageBuffer = Buffer.from(message)
-  }
-
-  getMessage() {
-    return this.messageBuffer.toString()
+  constructor(arweave?: Arweave) {
+    this.arweave = arweave || Arweave.init({})
   }
 }
