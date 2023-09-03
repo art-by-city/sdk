@@ -33,17 +33,19 @@ export interface LegacyTransactionQueryOpts {
 
 export default class LegacyTransactions {
   private ardb!: ArDB
+  private arweave!: Arweave
 
   constructor(arweave: Arweave) {
+    this.arweave = arweave
     this.ardb = new ArDB(arweave)
   }
 
   async query(
     category: DomainEntityCategory,
-    opts: Partial<LegacyTransactionQueryOpts>
+    opts?: Partial<LegacyTransactionQueryOpts>
   ): Promise<TransactionSearchResults> {
     let appName = 'ArtByCity'
-    switch (opts.environment) {
+    switch (opts?.environment) {
       case 'development':
         appName = 'ArtByCity-Development'
         break
@@ -57,49 +59,59 @@ export default class LegacyTransactions {
       .appName(appName)
       .tag('Category', category)
 
-    if (opts.from) {
+    if (opts?.from) {
       query = query.from(opts.from)
     }
 
-    if (opts.to) {
+    if (opts?.to) {
       query = query.to(opts.to)
     }
 
-    if (opts.type) {
+    if (opts?.type) {
       query = query.type(opts.type)
-    } else {
-      query = query.type('application/json')
     }
+    // else {
+    //   query = query.type('application/json')
+    // }
 
-    if (opts.tags) {
+    if (opts?.tags) {
       for (const tag of opts.tags) {
         query = query.tag(tag.name, tag.value)
       }
     }
 
-    if (opts.minHeight) {
+    if (opts?.minHeight) {
       query = query.min(opts.minHeight)
     }
 
-    if (opts.maxHeight) {
+    if (opts?.maxHeight) {
       query = query.max(opts.maxHeight)
     }
 
-    if (opts.cursor) {
+    if (opts?.cursor) {
       query = query.cursor(opts.cursor)
     }
 
-    if (opts.limit && opts.limit !== 'all') {
+    if (opts?.limit && opts.limit !== 'all') {
       query = query.limit(opts.limit)
     }
 
-    const sort = opts.sort || 'HEIGHT_DESC'
-
-    const transactions = opts.limit === 'all'
+    const sort = opts?.sort || 'HEIGHT_DESC'
+    const transactions = opts?.limit === 'all'
       ? await query.findAll({ sort }) as ArdbTransaction[]
       : await query.find({ sort }) as ArdbTransaction[]
     const cursor = query.getCursor()
 
     return { cursor, transactions }
+  }
+
+  async fetch(id: string) {
+    return this.arweave.transactions.get(id)
+  }
+
+  async fetchData(id: string) {
+    const res = await this.arweave.api.get(id)
+
+    return res.data
   }
 }
