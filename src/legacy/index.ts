@@ -46,3 +46,14 @@ export type LegacyPublicationManifest = {
   model?: string
   license?: LegacyPublicationManifestLicense
 }
+
+export type LegacyProfile = {
+  displayName?: string
+  bio?: string,
+  twitter?: string
+  x?: string
+  instagram?: string
+  twitch?: string
+  soundcloud?: string
+  linkedin?: string
+}

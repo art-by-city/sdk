@@ -4,6 +4,7 @@ import { ArtByCityEnvironment } from '../config'
 import VerifiedCreators from './verified-creators.json'
 import LegacyTransactions from './transactions'
 import {
+  LegacyProfile,
   LegacyPublicationFeed,
   LegacyPublicationManifest,
   LegacyPublicationManifestLicense
@@ -205,5 +206,42 @@ export default class ArtByCityLegacy {
     }
 
     return publication
+  }
+
+  async fetchProfile(address: string): Promise<LegacyProfile | null> {
+    const {
+      transactions
+    } = await this.transactions.query('profile', { from: address, limit: 1 })
+
+    if (transactions.length > 0) {
+      const profileId = transactions[0].id
+      const { data, ok } = await this.transactions.fetchData(profileId)
+
+      if (!ok) {
+        return null
+      }
+
+      if (
+        typeof data === 'string'
+        || data instanceof ArrayBuffer
+        || data instanceof ReadableStream
+      ) {
+        return null
+      }
+
+      const profile: LegacyProfile = data
+
+      if (profile.twitter) {
+        profile.x = profile.twitter
+      }
+
+      if (profile.x) {
+        profile.twitter = profile.x
+      }
+
+      return profile
+    }
+
+    return null
   }
 }
