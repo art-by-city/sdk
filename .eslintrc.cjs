@@ -20,7 +20,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended-type-checked'
   ],
   rules: {
-    indent: [ 'error', 2 ],
+    indent: [ 'error', 2 , { SwitchCase: 1 }],
     'max-len': [ 'error', {
       code: 80,
       tabWidth: 2

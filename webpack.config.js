@@ -1,10 +1,10 @@
-// const webpack = require("webpack")
+const webpack = require("webpack")
 const path = require("path")
 const config = {}
 
 config.webtests = {
   name: "web-tests",
-  entry: "./test/e2e/artbycity.web.e2e.ts",
+  entry: "./test/e2e/artbycity.e2e.ts",
   mode: "development",
   target: "web",
   module: {
@@ -31,6 +31,7 @@ config.webtests = {
     },
   },
   plugins: [
+    new webpack.IgnorePlugin({ resourceRegExp: /mocha/ })
     // new webpack.ProvidePlugin({
     //   process: "process/browser",
     //   crypto: "crypto-browserify",
