@@ -3,34 +3,11 @@ import Arweave from 'arweave'
 import { ArtByCityEnvironment } from '../config'
 import VerifiedCreators from './verified-creators.json'
 import LegacyTransactions from './transactions'
-import { ArtworkBundle } from './'
-
-export type LegacyPublicationFeed = {
-  bundles: ArtworkBundle[]
-  cursor: string
-}
-
-export type LegacyPublicationImage = {
-  image: string
-  preview: string
-  preview4k: string
-}
-
-export type LegacyPublication = {
-  id: string
-  category: 'artwork'
-  subCategory: 'image' | 'audio' | 'model'
-  published: Date
-  year: string
-  creator: string
-  title: string
-  slug: string
-  description: string
-  medium: string
-  images: LegacyPublicationImage[]
-  audio?: any[] // TODO -> audio
-  model?: any // TODO -> model
-}
+import {
+  LegacyPublicationFeed,
+  LegacyPublicationManifest,
+  LegacyPublicationManifestLicense
+} from './'
 
 export default class ArtByCityLegacy {
   private readonly transactions!: LegacyTransactions
@@ -46,7 +23,7 @@ export default class ArtByCityLegacy {
     return VerifiedCreators[this.environment]
   }
 
-  async feed(
+  async queryPublications(
     limit: number | 'all' = 10,
     creator?: string | string[],
     cursor?: string
@@ -76,38 +53,155 @@ export default class ArtByCityLegacy {
     }
   }
 
-  async fetch(manifestId: string): Promise<LegacyPublication> {
-    const manifest = await this.transactions.fetchData(manifestId)
-    // const manifest = JSON.parse(data)
-    const subCategory = manifest.audio
+  async fetchPublication(
+    manifestId: string
+  ): Promise<LegacyPublicationManifest> {
+    const { data, ok } = await this.transactions.fetchData(manifestId)
+
+    if (!ok) {
+      throw new Error(`404 Publication Not Found: ar://${manifestId}`)
+    }
+
+    if (
+      typeof data === 'string'
+      || data instanceof ArrayBuffer
+      || data instanceof ReadableStream
+    ) {
+      throw new Error(`415 Bad Publication Manifest: ar://${manifestId}`)
+    }
+
+    const subCategory = data.audio
       ? 'audio'
-      : manifest.model
+      : data.model
         ? 'model'
         : 'image'
 
-    const publication:
-      Omit<LegacyPublication, 'audio' | 'model'>
-      & { audio?: any, model?: any } =
-    {
+    const published = typeof data.published === 'string'
+      ? new Date(data.published)
+      // TODO -> fallback on timestamp from bundle tx
+      : new Date()
+
+    const year = typeof data.created === 'string'
+      ? data.created
+      // TODO -> fallback on timestamp from bundle tx
+      : new Date().getFullYear().toString()
+
+    const creator = typeof data.creator === 'string'
+      ? data.creator
+      // TODO -> fallback on bundle tx.owner
+      : ''
+
+    const title = typeof data.title === 'string'
+      ? data.title
+      : 'Untitled'
+
+    const slug = typeof data.slug === 'string' ? data.slug : manifestId
+
+    const dataImages = Array.isArray(data.images)
+      ? data.images 
+      : data.image
+        ? [ data.image ]
+        : []
+    const images = dataImages.map(di => {
+      if (di && typeof di === 'object' && !Array.isArray(di)) {
+        const image = {
+          image: typeof di.image === 'string' ? di.image : '',
+          preview: typeof di.preview === 'string' ? di.preview : '',
+          preview4k: typeof di.preview4k === 'string' ? di.preview4k : '',
+          animated: typeof di.animated === 'boolean' ? di.animated : false
+        }
+
+        return image
+      }
+
+      return { image: '', preview: '', preview4k: '' }
+    }).filter(di => !!di.image)
+
+    const publication: LegacyPublicationManifest = {
       id: manifestId,
       category: 'artwork',
       subCategory,
-      published: new Date(manifest.published),
-      year: manifest.created,
-      creator: manifest.creator,
-      title: manifest.title,
-      slug: manifest.slug,
-      description: manifest.description,
-      medium: manifest.medium,
-      images: manifest.images || [ manifest.image ],
+      published,
+      year,
+      creator,
+      title,
+      slug,
+      images
     }
 
-    if (manifest.audio) {
-      publication.audio = manifest.audio
+    if (typeof data.description === 'string') {
+      publication.description = data.description
     }
 
-    if (manifest.model) {
-      publication.model = manifest.model
+    if (typeof data.medium === 'string') {
+      publication.medium = data.medium
+    }
+
+    if (typeof data.genre === 'string') {
+      publication.genre = data.genre
+    }
+
+    if (typeof data.city === 'string') {
+      publication.city = data.city
+    }
+
+    if (typeof data.license === 'object' && !Array.isArray(data.license)) {
+      const license: Partial<LegacyPublicationManifestLicense> = {}
+
+      if (typeof data.license?.reference === 'string') {
+        license.reference = data.license.reference
+      }
+
+      if (typeof data.license?.detailsUrl === 'string') {
+        license.detailsUrl = data.license.detailsUrl
+      }
+
+      if (typeof data.license?.name === 'string') {
+        license.name = data.license.name
+      }
+
+      if (typeof data.license?.licenseId === 'string') {
+        license.licenseId = data.license.licenseId
+      }
+
+      if (data.license && Array.isArray(data.license.seeAlso)) {
+        const seeAlso: string[] = []
+        
+        for (const sa of data.license.seeAlso) {
+          if (typeof sa === 'string') {
+            seeAlso.push(sa)
+          }
+        }
+
+        if (seeAlso.length > 0) {
+          license.seeAlso = seeAlso
+        }
+      }
+
+      if (
+        license.reference
+        || license.detailsUrl
+        || license.licenseId
+        || license.name
+      ) {
+        publication.license = license
+      }
+    }
+
+    if (
+      typeof data.audio === 'object'
+      && !Array.isArray(data.audio)
+      && typeof data.audio?.audio === 'string'
+    ) {
+      publication.audio = data.audio.audio
+    }
+
+    if (
+      typeof data.model === 'object'
+      && !Array.isArray(data.model)
+      && typeof data.model?.model === 'string'
+    ) {
+      publication.model = data.model.model
     }
 
     return publication

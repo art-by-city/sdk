@@ -3,6 +3,10 @@ import ArDB from 'ardb'
 import ArdbTransaction from 'ardb/lib/models/transaction'
 import { ArtByCityEnvironment } from '../config'
 
+type AnyJson =  boolean | number | string | null | JsonArray | JsonMap
+interface JsonMap {  [key: string]: AnyJson }
+interface JsonArray extends Array<AnyJson> {}
+
 export type DomainEntityCategory =
   | 'artwork'
   | 'artwork:bundle'
@@ -45,6 +49,7 @@ export default class LegacyTransactions {
     opts?: Partial<LegacyTransactionQueryOpts>
   ): Promise<TransactionSearchResults> {
     let appName = 'ArtByCity'
+
     switch (opts?.environment) {
       case 'development':
         appName = 'ArtByCity-Development'
@@ -110,8 +115,8 @@ export default class LegacyTransactions {
   }
 
   async fetchData(id: string) {
-    const res = await this.arweave.api.get(id)
-
-    return res.data
+    return this.arweave
+      .api
+      .get<JsonMap | string | ArrayBuffer | ReadableStream>(id)
   }
 }

@@ -31,16 +31,4 @@ describe('ArtByCity Legacy Module', () => {
       expect(legacy.verifiedCreators).to.equal(VerifiedCreators.production)
     })
   })
-
-  describe('Publication Feeds', () => {
-    it('Fetches with defaults',
-    // async () => {
-    //   const legacy = new ArtByCityLegacy('production')
-
-    //   const publications = await legacy.feed()
-
-
-    // }
-    )
-  })
 })
