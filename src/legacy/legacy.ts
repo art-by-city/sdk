@@ -87,6 +87,30 @@ export default class ArtByCityLegacy {
     }
   }
 
+  async fetchPublicationBySlugOrId(
+    slugOrId: string
+  ): Promise<LegacyPublicationManifest> {
+    try {
+      return await this.fetchPublicationBySlug(slugOrId)
+    } catch (error) { /* eslint-disable-line no-empty */ }
+
+    return this.fetchPublication(slugOrId)
+  }
+
+  async fetchPublicationBySlug(
+    slug: string
+  ): Promise<LegacyPublicationManifest> {
+    const { transactions } = await this
+      .transactions
+      .query('artwork', { tags: [ { name: 'slug', value: slug } ] })
+    
+    if (transactions.length < 1) {
+      throw new Error(`404 Publication Not Found: slug://${slug}`)
+    }
+
+    return this.fetchPublication(transactions[0].id)
+  }
+
   async fetchPublication(
     manifestId: string
   ): Promise<LegacyPublicationManifest> {

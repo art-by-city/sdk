@@ -22,6 +22,7 @@ const AUDIO_MANIFEST_ID = 'q0GSg9bSntJQIj-FiHYApMat1e20EGM2JkdgrkhtZjI'
 const MODEL_MANIFEST_ID = 'N_nbvz1vWrNI1kl0Nxefgi3Zo0p9F-onoF1mafWaKUU'
 // const LICENSE_BUNDLE_ID = 'BgRQtrLdwexvWcbP5RKheYRGnQUsAZtZ6uKD_5A-CzE'
 const LICENSE_MANIFEST_ID = 'q0GSg9bSntJQIj-FiHYApMat1e20EGM2JkdgrkhtZjI'
+const SLUG = 'modified-icosahedron-3d'
 
 const PROFILE_ID = '2aLkIcBH52s2LtZoyRQC_YaFGGSB2r2yGUtgYM5MjZc'
 
@@ -180,6 +181,55 @@ describe(`ArtByCity (web)`, () => {
           .with.length(43)
       })
 
+      it('Fetches a publication by slug', async () => {
+        const abc = new ArtByCity(arweave)
+
+        const publication = await abc.legacy.fetchPublicationBySlug(SLUG)
+
+        expect(publication.id).to.be.a('string').with.length(43)
+        expect(publication.category).to.equal('artwork')
+        expect(publication.subCategory).to.be.oneOf(
+          [ 'image', 'audio', 'model' ]
+        )
+        expect(publication.published).to.be.a('Date')
+        expect(publication.year).to.be.a('string')
+        expect(publication.slug).to.equal(SLUG)
+        expect(publication.title).to.be.a('string')
+        expect(publication.images).to.not.be.empty
+        expect(publication.images[0].image).to.be.a('string').with.length(43)
+        expect(publication.images[0].preview).to.be.a('string').with.length(43)
+        expect(publication.images[0].preview4k)
+          .to.be.a('string')
+          .with.length(43)
+      })
+
+      context('Fetches publication by slug or id', () => {
+        it('by slug', async () => {
+          const abc = new ArtByCity(arweave)
+
+          const publication = await abc.legacy.fetchPublicationBySlugOrId(SLUG)
+          expect(publication.id).to.be.a('string').with.length(43)
+          expect(publication.category).to.equal('artwork')
+          expect(publication.subCategory).to.be.oneOf(
+            [ 'image', 'audio', 'model' ]
+          )
+          expect(publication.slug).to.equal(SLUG)
+        })
+
+        it('by id', async () => {
+          const abc = new ArtByCity(arweave)
+
+          const publication = await abc.legacy.fetchPublicationBySlugOrId(
+            MODEL_MANIFEST_ID
+          )
+          expect(publication.id).to.be.a('string').with.length(43)
+          expect(publication.category).to.equal('artwork')
+          expect(publication.subCategory).to.be.oneOf(
+            [ 'image', 'audio', 'model' ]
+          )
+        })
+      })
+
       it('Fetches a publication by manifest id from bundle', async () => {
         const abc = new ArtByCity(arweave)
   
@@ -294,6 +344,29 @@ describe(`ArtByCity (web)`, () => {
           Error,
           `404 Publication Not Found: ar://${badManifestId}`
         )
+      })
+
+      it('Throws 404 on fetches by slug', () => {
+        const abc = new ArtByCity(arweave)
+        const badSlug = '404thisslugnotexistpleaselol'
+
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        expect(abc.legacy.fetchPublicationBySlug(badSlug)).to.be.rejectedWith(
+          Error,
+          `404 Publication Not Found: slug://${badSlug}`
+        )
+      })
+
+      it('Throws 404 on fetches by slug or id', () => {
+        const abc = new ArtByCity(arweave)
+        const badSlug = '404thisslugnotexistpleaselol'
+
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        expect(abc.legacy.fetchPublicationBySlugOrId(badSlug))
+          .to.be.rejectedWith(
+            Error,
+            `404 Publication Not Found: ar://${badSlug}`
+          )
       })
     })
 
