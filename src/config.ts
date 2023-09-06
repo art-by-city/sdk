@@ -7,4 +7,5 @@ export type ArtByCityEnvironment = typeof ENVIRONMENTS[number]
 
 export type ArtByCityConfig = {
   environment: ArtByCityEnvironment
+  usernamesContractId: string
 }
