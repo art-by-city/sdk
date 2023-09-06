@@ -5,9 +5,10 @@ import VerifiedCreators from './verified-creators.json'
 import LegacyTransactions from './transactions'
 import {
   LegacyProfile,
-  LegacyPublicationFeed,
+  LegacyBundlePublicationFeed,
   LegacyPublicationManifest,
-  LegacyPublicationManifestLicense
+  LegacyPublicationManifestLicense,
+  LegacyPublicationFeed
 } from './'
 
 export default class ArtByCityLegacy {
@@ -24,11 +25,43 @@ export default class ArtByCityLegacy {
     return VerifiedCreators[this.environment]
   }
 
-  async queryPublicationBundles(
+  async queryPublications(
     limit: number | 'all' = 10,
     creator?: string | string[],
     cursor?: string
   ): Promise<LegacyPublicationFeed> {
+    const from = creator || this.verifiedCreators
+
+    const {
+      transactions,
+      cursor: nextCursor
+    } = await this.transactions.query('artwork', { from, limit, cursor })
+
+    return {
+      cursor: nextCursor,
+      publications: transactions.map(tx => {
+        const slugTag = tx.tags.find(t => t.name === 'slug')
+        const subCategoryTag = tx.tags.find(t => t.name === 'Sub-Category')
+        let subCategory: 'image' | 'audio' | 'model' = 'image'
+        if (['image', 'audio', 'model'].includes(subCategoryTag?.value || '')) {
+          subCategory = subCategoryTag?.value as 'image' | 'audio' | 'model'
+        }
+
+        return {
+          id: tx.id,
+          category: 'artwork',
+          subCategory,
+          slug: slugTag?.value || tx.id
+        }
+      })
+    }
+  }
+
+  async queryPublicationBundles(
+    limit: number | 'all' = 10,
+    creator?: string | string[],
+    cursor?: string
+  ): Promise<LegacyBundlePublicationFeed> {
     const from = creator || this.verifiedCreators
 
     const {

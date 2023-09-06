@@ -1,6 +1,6 @@
 export { default } from './legacy'
 
-export interface ArtworkBundle {
+export interface BundlePublication {
   id: string
   manifestId: string
   category: 'artwork:bundle'
@@ -8,8 +8,13 @@ export interface ArtworkBundle {
   contractSrc?: string
 }
 
+export type LegacyBundlePublicationFeed = {
+  bundles: BundlePublication[]
+  cursor: string
+}
+
 export type LegacyPublicationFeed = {
-  bundles: ArtworkBundle[]
+  publications: LegacyPublicationManifestBase[]
   cursor: string
 }
 
@@ -28,15 +33,20 @@ export type LegacyPublicationManifestLicense = {
   seeAlso?: string[]
 }
 
-export type LegacyPublicationManifest = {
+export type LegacyPublicationManifestBase = {
   id: string
   category: 'artwork'
   subCategory: 'image' | 'audio' | 'model'
+  slug: string
+}
+
+export interface LegacyPublicationManifest
+  extends LegacyPublicationManifestBase
+{
   published: Date
   year: string
   creator: string
   title: string
-  slug: string
   description?: string
   medium?: string
   genre?: string

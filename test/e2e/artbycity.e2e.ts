@@ -103,8 +103,84 @@ describe(`ArtByCity (web)`, () => {
       })
     })
 
+    context('Querying Publication Manifests', () => {
+      it('Defaults to verified creators when querying', async () => {
+        const abc = new ArtByCity(arweave)
+
+        const { publications } = await abc.legacy.queryPublications()
+
+        expect(publications).to.be.an('array')
+        for (const publication of publications) {
+          expect(publication.id).to.be.a('string')
+          expect(publication.category).to.equal('artwork')
+          expect(publication.subCategory)
+            .to.be.oneOf(['image', 'audio', 'model'])
+          expect(publication.slug).to.be.a('string')
+        }
+      })
+
+      it('Allows specifying limit', async () => {
+        const abc = new ArtByCity(arweave)
+  
+        const { publications } = await abc.legacy.queryPublications(5)
+  
+        expect(publications).to.be.an('array')
+        expect(publications.length).to.equal(5)
+      })
+
+      // TODO -> re-enable this test when using arlocal mock data
+      it.skip('Allows limit all', async () => {
+        const abc = new ArtByCity(arweave)
+  
+        const { publications } = await abc.legacy.queryPublications('all')
+  
+        expect(publications).to.be.an('array')
+        expect(publications.length).to.be.greaterThan(10)
+      })
+
+      it('Allows specifying cursor', async () => {
+        const abc = new ArtByCity(arweave)
+  
+        const {
+          publications: firstBatch,
+          cursor
+        } = await abc.legacy.queryPublications(1)
+        const {
+          publications: secondBatch
+        } = await abc.legacy.queryPublications(1, undefined, cursor)
+  
+        expect(firstBatch).to.be.an('array')
+        expect(secondBatch).to.be.an('array')
+        expect(firstBatch).to.not.deep.equal(secondBatch)
+      })
+    })
+
     context('Fetching Publications', () => {
-      it('Fetches a publication by manifest id', async () => {
+      it('Fetches a publication by id', async () => {
+        const abc = new ArtByCity(arweave)
+
+        const { publications } = await abc.legacy.queryPublications(1)
+        const { id } = publications[0]
+        const publication = await abc.legacy.fetchPublication(id)
+  
+        expect(publication.id).to.be.a('string').with.length(43)
+        expect(publication.category).to.equal('artwork')
+        expect(publication.subCategory).to.be.oneOf(
+          [ 'image', 'audio', 'model' ]
+        )
+        expect(publication.published).to.be.a('Date')
+        expect(publication.year).to.be.a('string')
+        expect(publication.slug).to.be.a('string')
+        expect(publication.title).to.be.a('string')
+        expect(publication.images).to.not.be.empty
+        expect(publication.images[0].image).to.be.a('string').with.length(43)
+        expect(publication.images[0].preview).to.be.a('string').with.length(43)
+        expect(publication.images[0].preview4k)
+          .to.be.a('string')
+          .with.length(43)
+      })
+
+      it('Fetches a publication by manifest id from bundle', async () => {
         const abc = new ArtByCity(arweave)
   
         const { bundles } = await abc.legacy.queryPublicationBundles(1)
