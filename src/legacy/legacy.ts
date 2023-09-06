@@ -10,7 +10,8 @@ import {
   LegacyPublicationManifestLicense,
   LegacyPublicationFeed,
   LegacyLikesFeed,
-  mapLegacyLikeFromTransaction
+  mapLegacyLikeFromTransaction,
+  LegacyTipsFeed
 } from './'
 
 export default class ArtByCityLegacy {
@@ -346,6 +347,39 @@ export default class ArtByCityLegacy {
     return {
       cursor: nextCursor,
       likes: transactions.map(mapLegacyLikeFromTransaction)
+    }
+  }
+
+  async queryTips(
+    address: string,
+    receivedOrSent: 'received' | 'sent',
+    limit: number | 'all' = 100,
+    cursor?: string
+  ): Promise<LegacyTipsFeed> {
+    const receivedOrSentOpts = receivedOrSent === 'received'
+      ? { to: address }
+      : { from: address }
+
+    const {
+      transactions,
+      cursor: nextCursor
+    } = await this.transactions.query('tip', {
+      ...receivedOrSentOpts,
+      limit,
+      cursor
+    })
+
+    return {
+      cursor: nextCursor,
+      tips: transactions.map(tx => {
+        return {
+          id: tx.id,
+          amount: tx.quantity.winston,
+          from: tx.owner.address,
+          to: tx.recipient,
+          timestamp: tx.block.timestamp
+        }
+      })
     }
   }
 }

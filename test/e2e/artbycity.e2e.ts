@@ -28,6 +28,8 @@ const PROFILE_ID = '2aLkIcBH52s2LtZoyRQC_YaFGGSB2r2yGUtgYM5MjZc'
 const ARTIST_ADDRESS = 'YftBIDY3rUeITuEhhXBHCGY77K6VkBj70STjRyGFE4k'
 const LIKER_ADDRESS = '36Ar8VmyC7YS7JGaep9ca2ANjLABETTpxSeA7WOV45Y'
 const LIKED_PUBLICATION = 'VAcSNlptOPg6Brf4Ur4tnmzziebTWux5VnWowHZkDLM'
+const TIPPER_ADDRESS = 'Uy2XZ7P7F4zBllF5uPdd1ih9jiQrIGvD3X8L13cc5_s'
+const TIPPEE_ADDRESS = 'x3GW6wfBZ3wHTflETInuzJ5rOv_6JvlFi-dl6yYAr8Y'
 
 const arweave = Arweave.init({
   protocol: 'https',
@@ -551,6 +553,78 @@ describe(`ArtByCity (web)`, () => {
           expect(secondBatch).to.be.an('array')
           expect(firstBatch).to.not.deep.equal(secondBatch)
         })
+      })
+    })
+
+    context('Querying Tips', () => {
+      it('received by address', async () => {
+        const abc = new ArtByCity(arweave)
+
+        const { tips } = await abc.legacy.queryTips(TIPPEE_ADDRESS, 'received')
+
+        expect(tips).to.be.an('array')
+        expect(tips).to.not.be.empty
+        for (const tip of tips) {
+          expect(tip.id).to.be.a('string')
+          expect(tip.amount).to.be.a('string')
+          expect(tip.from).to.be.a('string')
+          expect(tip.to).to.equal(TIPPEE_ADDRESS)
+          expect(tip.timestamp).to.be.a('number')
+        }
+      })
+
+      it('sent by address', async () => {
+        const abc = new ArtByCity(arweave)
+
+        const { tips } = await abc.legacy.queryTips(TIPPER_ADDRESS, 'sent')
+
+        expect(tips).to.be.an('array')
+        expect(tips).to.not.be.empty
+        for (const tip of tips) {
+          expect(tip.id).to.be.a('string')
+          expect(tip.amount).to.be.a('string')
+          expect(tip.from).to.equal(TIPPER_ADDRESS)
+          expect(tip.to).to.be.a('string')
+          expect(tip.timestamp).to.be.a('number')
+        }
+      })
+
+      it('given a limit', async () => {
+        const abc = new ArtByCity(arweave)
+
+        const { tips } = await abc.legacy.queryTips(TIPPER_ADDRESS, 'sent', 2)
+
+        expect(tips).to.be.an('array')
+        expect(tips).to.have.lengthOf(2)
+      })
+
+      // TODO -> re-enable this test when using arlocal mock data
+      it.skip('given a limit of all', async () => {
+        const abc = new ArtByCity(arweave)
+
+        const { tips } = await abc
+          .legacy
+          .queryTips(TIPPER_ADDRESS, 'sent', 'all')
+
+        expect(tips).to.be.an('array')
+        expect(tips).to.not.be.empty
+        // TODO -> more specific test
+      })
+
+      it('given a cursor', async () => {
+        const abc = new ArtByCity(arweave)
+    
+        const {
+          tips: firstBatch,
+          cursor
+        } = await abc.legacy.queryTips(TIPPER_ADDRESS, 'sent', 2)
+        const {
+          tips: secondBatch
+        } = await abc.legacy.queryTips(TIPPER_ADDRESS, 'sent', 2, cursor)
+  
+        expect(firstBatch).to.be.an('array')
+        expect(secondBatch).to.be.an('array')
+        expect(firstBatch).to.not.deep.equal(secondBatch)
       })
     })
   })
