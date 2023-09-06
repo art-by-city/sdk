@@ -92,7 +92,7 @@ export default class ArtByCityLegacy {
   ): Promise<LegacyPublicationManifest> {
     try {
       return await this.fetchPublicationBySlug(slugOrId)
-    } catch (error) { /* eslint-disable-line no-empty */}
+    } catch (error) { /* eslint-disable-line no-empty */ }
 
     return this.fetchPublication(slugOrId)
   }
