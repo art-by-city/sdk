@@ -24,7 +24,7 @@ export default class ArtByCityLegacy {
     return VerifiedCreators[this.environment]
   }
 
-  async queryPublications(
+  async queryPublicationBundles(
     limit: number | 'all' = 10,
     creator?: string | string[],
     cursor?: string

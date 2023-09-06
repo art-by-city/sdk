@@ -52,11 +52,11 @@ describe(`ArtByCity (web)`, () => {
         .to.deep.equal(VerifiedCreators.production)
     })
 
-    context('Querying Publications', () => {
+    context('Querying Publication Bundles', () => {
       it('Defaults to verified creators when querying', async () => {
         const abc = new ArtByCity(arweave)
   
-        const { bundles } = await abc.legacy.queryPublications()
+        const { bundles } = await abc.legacy.queryPublicationBundles()
   
         expect(bundles).to.be.an('array')
         for (const bundle of bundles) {
@@ -70,7 +70,7 @@ describe(`ArtByCity (web)`, () => {
       it('Allows specifying limit', async () => {
         const abc = new ArtByCity(arweave)
   
-        const { bundles } = await abc.legacy.queryPublications(5)
+        const { bundles } = await abc.legacy.queryPublicationBundles(5)
   
         expect(bundles).to.be.an('array')
         expect(bundles.length).to.equal(5)
@@ -80,7 +80,7 @@ describe(`ArtByCity (web)`, () => {
       it.skip('Allows limit all', async () => {
         const abc = new ArtByCity(arweave)
   
-        const { bundles } = await abc.legacy.queryPublications('all')
+        const { bundles } = await abc.legacy.queryPublicationBundles('all')
   
         expect(bundles).to.be.an('array')
         expect(bundles.length).to.be.greaterThan(10)
@@ -92,10 +92,10 @@ describe(`ArtByCity (web)`, () => {
         const {
           bundles: firstBatch,
           cursor
-        } = await abc.legacy.queryPublications(1)
+        } = await abc.legacy.queryPublicationBundles(1)
         const {
           bundles: secondBatch
-        } = await abc.legacy.queryPublications(1, undefined, cursor)
+        } = await abc.legacy.queryPublicationBundles(1, undefined, cursor)
   
         expect(firstBatch).to.be.an('array')
         expect(secondBatch).to.be.an('array')
@@ -107,7 +107,7 @@ describe(`ArtByCity (web)`, () => {
       it('Fetches a publication by manifest id', async () => {
         const abc = new ArtByCity(arweave)
   
-        const { bundles } = await abc.legacy.queryPublications(1)
+        const { bundles } = await abc.legacy.queryPublicationBundles(1)
         const { manifestId } = bundles[0]
         const publication = await abc.legacy.fetchPublication(manifestId)
   
