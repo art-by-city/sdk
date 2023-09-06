@@ -60,6 +60,7 @@
   "dependencies": {
     "ardb": "^1.1.10",
     "arweave": "^1.14.4",
-    "buffer": "^6.0.3"
+    "buffer": "^6.0.3",
+    "warp-contracts": "^1.4.18"
   }
 }

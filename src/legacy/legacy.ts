@@ -1,8 +1,9 @@
 import Arweave from 'arweave'
 
-import { ArtByCityEnvironment } from '../config'
+import { ArtByCityConfig } from '../config'
 import VerifiedCreators from './verified-creators.json'
 import LegacyTransactions from './transactions'
+import LegacyUsernames from './usernames'
 import {
   LegacyProfile,
   LegacyBundlePublicationFeed,
@@ -16,16 +17,21 @@ import {
 
 export default class ArtByCityLegacy {
   private readonly transactions!: LegacyTransactions
+  public readonly usernames!: LegacyUsernames
 
   constructor(
     arweave: Arweave,
-    private readonly environment: ArtByCityEnvironment
+    private readonly config: ArtByCityConfig
   ) {
     this.transactions = new LegacyTransactions(arweave)
+    this.usernames = new LegacyUsernames(
+      config.usernamesContractId,
+      config.environment
+    )
   }
 
   get verifiedCreators(): string[] {
-    return VerifiedCreators[this.environment]
+    return VerifiedCreators[this.config.environment]
   }
 
   async queryPublications(
