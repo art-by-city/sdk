@@ -1,3 +1,5 @@
+import ArdbTransaction from 'ardb/lib/models/transaction'
+
 export { default } from './legacy'
 
 export interface BundlePublication {
@@ -66,4 +68,36 @@ export type LegacyProfile = {
   twitch?: string
   soundcloud?: string
   linkedin?: string
+}
+
+export interface LegacyTip {
+  id: string
+  amount: string
+  from: string
+  to: string
+  timestamp: number
+}
+
+export interface LegacyLike extends LegacyTip {
+  liked: string
+}
+
+export interface LegacyLikesFeed {
+  likes: LegacyLike[]
+  cursor: string
+}
+
+export const mapLegacyLikeFromTransaction = (
+  tx: ArdbTransaction
+): LegacyLike => {
+  const likedEntityTag = tx.tags.find(t => t.name === 'liked-entity')
+
+  return {
+    id: tx.id,
+    amount: tx.quantity.winston,
+    from: tx.owner.address,
+    to: tx.recipient,
+    timestamp: tx.block.timestamp,
+    liked: likedEntityTag?.value || ''
+  }
 }

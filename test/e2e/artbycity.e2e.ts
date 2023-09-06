@@ -25,6 +25,9 @@ const LICENSE_MANIFEST_ID = 'q0GSg9bSntJQIj-FiHYApMat1e20EGM2JkdgrkhtZjI'
 const SLUG = 'modified-icosahedron-3d'
 
 const PROFILE_ID = '2aLkIcBH52s2LtZoyRQC_YaFGGSB2r2yGUtgYM5MjZc'
+const ARTIST_ADDRESS = 'YftBIDY3rUeITuEhhXBHCGY77K6VkBj70STjRyGFE4k'
+const LIKER_ADDRESS = '36Ar8VmyC7YS7JGaep9ca2ANjLABETTpxSeA7WOV45Y'
+const LIKED_PUBLICATION = 'VAcSNlptOPg6Brf4Ur4tnmzziebTWux5VnWowHZkDLM'
 
 const arweave = Arweave.init({
   protocol: 'https',
@@ -395,6 +398,159 @@ describe(`ArtByCity (web)`, () => {
         const profile = await abc.legacy.fetchProfile(badAddress)
 
         expect(profile).to.be.null
+      })
+    })
+
+    context('Querying Likes', () => {
+      context('By address', () => {
+        it('Query likes received by address', async () => {
+          const abc = new ArtByCity(arweave)
+  
+          const { likes } = await abc.legacy.queryLikes(
+            ARTIST_ADDRESS,
+            'received'
+          )
+  
+          expect(likes).to.be.an('array')
+          expect(likes).to.not.be.empty
+          for (const like of likes) {
+            expect(like.id).to.be.a('string')
+            expect(like.amount).to.be.a('string')
+            expect(like.from).to.be.a('string')
+            expect(like.to).to.equal(ARTIST_ADDRESS)
+            expect(like.timestamp).to.be.a('number')
+            expect(like.liked).to.be.a('string')
+          }
+        })
+  
+        it('Query likes sent by address', async () => {
+          const abc = new ArtByCity(arweave)
+  
+          const { likes } = await abc.legacy.queryLikes(
+            LIKER_ADDRESS,
+            'sent'
+          )
+  
+          expect(likes).to.be.an('array')
+          expect(likes).to.not.be.empty
+          for (const like of likes) {
+            expect(like.id).to.be.a('string')
+            expect(like.amount).to.be.a('string')
+            expect(like.from).to.equal(LIKER_ADDRESS)
+            expect(like.to).to.be.a('string')
+            expect(like.timestamp).to.be.a('number')
+            expect(like.liked).to.be.a('string')
+          }
+        })
+
+        it('Query likes given a limit', async () => {
+          const abc = new ArtByCity(arweave)
+  
+          const { likes } = await abc.legacy.queryLikes(
+            LIKER_ADDRESS,
+            'sent',
+            5
+          )
+  
+          expect(likes).to.be.an('array')
+          expect(likes).to.have.lengthOf(5)
+        })
+  
+        // TODO -> re-enable this test when using arlocal mock data
+        it.skip('Query likes given a limit of all', async () => {
+          const abc = new ArtByCity(arweave)
+  
+          const { likes } = await abc.legacy.queryLikes(
+            LIKER_ADDRESS,
+            'sent',
+            'all'
+          )
+  
+          expect(likes).to.be.an('array')
+          expect(likes).to.not.be.empty
+          // TODO -> more specific test
+        })
+  
+        it('Query likes given a cursor', async () => {
+          const abc = new ArtByCity(arweave)
+    
+          const {
+            likes: firstBatch,
+            cursor
+          } = await abc.legacy.queryLikes(LIKER_ADDRESS, 'sent', 5)
+          const {
+            likes: secondBatch
+          } = await abc.legacy.queryLikes(LIKER_ADDRESS, 'sent', 5, cursor)
+    
+          expect(firstBatch).to.be.an('array')
+          expect(secondBatch).to.be.an('array')
+          expect(firstBatch).to.not.deep.equal(secondBatch)
+        })
+      })
+
+      context('By publication', () => {
+        it('Query likes received by publication', async () => {
+          const abc = new ArtByCity(arweave)
+  
+          const { likes } = await abc
+            .legacy
+            .queryLikesForPublication(LIKED_PUBLICATION)
+  
+          expect(likes).to.be.an('array')
+          expect(likes).to.not.be.empty
+          for (const like of likes) {
+            expect(like.id).to.be.a('string')
+            expect(like.amount).to.be.a('string')
+            expect(like.from).to.be.a('string')
+            expect(like.to).to.be.a('string')
+            expect(like.timestamp).to.be.a('number')
+            expect(like.liked).to.equal(LIKED_PUBLICATION)
+          }
+        })
+
+        it('Query likes given a limit', async () => {
+          const abc = new ArtByCity(arweave)
+
+          const { likes } = await abc
+            .legacy
+            .queryLikesForPublication(LIKED_PUBLICATION, 2)
+
+          expect(likes).to.be.an('array')
+          expect(likes).to.have.lengthOf(2)
+        })
+
+        // TODO -> re-enable this test when using arlocal mock data
+        it.skip('Query likes given a limit of all', async () => {
+          const abc = new ArtByCity(arweave)
+
+          const { likes } = await abc
+            .legacy
+            .queryLikesForPublication(LIKED_PUBLICATION, 'all')
+
+          expect(likes).to.be.an('array')
+          expect(likes).to.not.be.empty
+          // TODO -> more specific test
+        })
+
+        it('Query likes given a cursor', async () => {
+          const abc = new ArtByCity(arweave)
+    
+          const {
+            likes: firstBatch,
+            cursor
+          } = await abc
+            .legacy
+            .queryLikesForPublication(LIKED_PUBLICATION, 2)
+          const {
+            likes: secondBatch
+          } = await abc
+            .legacy
+            .queryLikesForPublication(LIKED_PUBLICATION, 2, cursor)
+    
+          expect(firstBatch).to.be.an('array')
+          expect(secondBatch).to.be.an('array')
+          expect(firstBatch).to.not.deep.equal(secondBatch)
+        })
       })
     })
   })

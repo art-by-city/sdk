@@ -8,7 +8,9 @@ import {
   LegacyBundlePublicationFeed,
   LegacyPublicationManifest,
   LegacyPublicationManifestLicense,
-  LegacyPublicationFeed
+  LegacyPublicationFeed,
+  LegacyLikesFeed,
+  mapLegacyLikeFromTransaction
 } from './'
 
 export default class ArtByCityLegacy {
@@ -300,5 +302,50 @@ export default class ArtByCityLegacy {
     }
 
     return null
+  }
+
+  async queryLikes(
+    address: string,
+    receivedOrSent: 'received' | 'sent',
+    limit: number | 'all' = 100,
+    cursor?: string
+  ): Promise<LegacyLikesFeed> {
+    const receivedOrSentOpts = receivedOrSent === 'received'
+      ? { to: address }
+      : { from: address }
+
+    const {
+      transactions,
+      cursor: nextCursor
+    } = await this.transactions.query('like', {
+      ...receivedOrSentOpts,
+      limit,
+      cursor
+    })
+
+    return {
+      cursor: nextCursor,
+      likes: transactions.map(mapLegacyLikeFromTransaction)
+    }
+  }
+
+  async queryLikesForPublication(
+    id: string,
+    limit: number | 'all' = 100,
+    cursor?: string
+  ): Promise<LegacyLikesFeed> {
+    const {
+      transactions,
+      cursor: nextCursor
+    } = await this.transactions.query('like', {
+      limit,
+      cursor,
+      tags: [ { name: 'liked-entity', value: id } ]
+    })
+
+    return {
+      cursor: nextCursor,
+      likes: transactions.map(mapLegacyLikeFromTransaction)
+    }
   }
 }
