@@ -101,3 +101,8 @@ export const mapLegacyLikeFromTransaction = (
     liked: likedEntityTag?.value || ''
   }
 }
+
+export interface LegacyTipsFeed {
+  tips: LegacyTip[]
+  cursor: string
+}
