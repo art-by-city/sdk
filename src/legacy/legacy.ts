@@ -13,21 +13,25 @@ import {
   LegacyPublicationFeed,
   LegacyLikesFeed,
   mapLegacyLikeFromTransaction,
-  LegacyTipsFeed
+  LegacyTipsFeed,
+  LegacyAvatar
 } from './'
 
 export default class ArtByCityLegacy {
   private readonly transactions!: LegacyTransactions
   public readonly usernames!: LegacyUsernames
+  private readonly gatewayRoot!: string
   private readonly cacheEnabled!: boolean
   public readonly caches: {
     publications: LegacyMemcache<LegacyPublicationManifest>
     slugs: LegacyMemcache<string>
     profiles: LegacyMemcache<LegacyProfile>
+    avatars: LegacyMemcache<LegacyAvatar>
   } = { /* eslint-disable indent */
     publications: new LegacyMemcache<LegacyPublicationManifest>(),
     slugs: new LegacyMemcache<string>(),
-    profiles: new LegacyMemcache<LegacyProfile>()
+    profiles: new LegacyMemcache<LegacyProfile>(),
+    avatars: new LegacyMemcache<LegacyAvatar>()
   } /* eslint-enable indent */
 
   constructor(arweave: Arweave, private readonly config: ArtByCityConfig) {
@@ -37,6 +41,8 @@ export default class ArtByCityLegacy {
       config.environment
     )
     this.cacheEnabled = config.cache.type === 'memcache'
+    const { protocol, host, port } = arweave.api.getConfig()
+    this.gatewayRoot = `${protocol}://${host}:${port}`
   }
 
   get verifiedCreators(): string[] {
@@ -349,6 +355,41 @@ export default class ArtByCityLegacy {
       }
 
       return profile
+    }
+
+    return null
+  }
+
+  async fetchAvatar(
+    address: string,
+    useCache: boolean = true
+  ): Promise<LegacyAvatar | null> {
+    if (this.cacheEnabled && useCache) {
+      const cached = this.caches.avatars.get(address)
+      if (cached) { return cached }
+    }
+
+    const {
+      transactions
+    } = await this.transactions.query('avatar', { from: address, limit: 1 })
+
+    if (transactions.length > 0) {
+      const avatarId = transactions[0].id
+      const contentTypeTag = transactions[0]
+        .tags
+        .find(t => t.name === 'Content-Type')
+
+      const avatar: LegacyAvatar = {
+        id: avatarId,
+        src: `${this.gatewayRoot}/${avatarId}`,
+        contentType: contentTypeTag?.value || 'image/png'
+      }
+
+      if (this.cacheEnabled && useCache) {
+        this.caches.avatars.put(address, avatar)
+      }
+
+      return avatar
     }
 
     return null
