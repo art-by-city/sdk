@@ -23,7 +23,7 @@ export default class ArtByCityLegacy {
     arweave: Arweave,
     private readonly config: ArtByCityConfig
   ) {
-    this.transactions = new LegacyTransactions(arweave)
+    this.transactions = new LegacyTransactions(arweave, config.environment)
     this.usernames = new LegacyUsernames(
       config.usernamesContractId,
       config.environment
