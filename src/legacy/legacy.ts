@@ -4,6 +4,7 @@ import { ArtByCityConfig } from '../config'
 import VerifiedCreators from './verified-creators.json'
 import LegacyTransactions from './transactions'
 import LegacyUsernames from './usernames'
+import LegacyMemcache from './memcache'
 import {
   LegacyProfile,
   LegacyBundlePublicationFeed,
@@ -18,16 +19,24 @@ import {
 export default class ArtByCityLegacy {
   private readonly transactions!: LegacyTransactions
   public readonly usernames!: LegacyUsernames
+  private readonly cacheEnabled!: boolean
+  public readonly caches: {
+    publications: LegacyMemcache<LegacyPublicationManifest>
+    slugs: LegacyMemcache<string>
+    profiles: LegacyMemcache<LegacyProfile>
+  } = { /* eslint-disable indent */
+    publications: new LegacyMemcache<LegacyPublicationManifest>(),
+    slugs: new LegacyMemcache<string>(),
+    profiles: new LegacyMemcache<LegacyProfile>()
+  } /* eslint-enable indent */
 
-  constructor(
-    arweave: Arweave,
-    private readonly config: ArtByCityConfig
-  ) {
+  constructor(arweave: Arweave, private readonly config: ArtByCityConfig) {
     this.transactions = new LegacyTransactions(arweave, config.environment)
     this.usernames = new LegacyUsernames(
       config.usernamesContractId,
       config.environment
     )
+    this.cacheEnabled = config.cache.type === 'memcache'
   }
 
   get verifiedCreators(): string[] {
@@ -97,18 +106,25 @@ export default class ArtByCityLegacy {
   }
 
   async fetchPublicationBySlugOrId(
-    slugOrId: string
+    slugOrId: string,
+    useCache: boolean = true
   ): Promise<LegacyPublicationManifest> {
     try {
-      return await this.fetchPublicationBySlug(slugOrId)
+      return await this.fetchPublicationBySlug(slugOrId, useCache)
     } catch (error) { /* eslint-disable-line no-empty */ }
 
-    return this.fetchPublication(slugOrId)
+    return this.fetchPublication(slugOrId, useCache)
   }
 
   async fetchPublicationBySlug(
-    slug: string
+    slug: string,
+    useCache: boolean = true
   ): Promise<LegacyPublicationManifest> {
+    if (this.cacheEnabled && useCache) {
+      const cached = this.caches.slugs.get(slug)
+      if (cached) { return this.fetchPublication(cached) }
+    }
+
     const { transactions } = await this
       .transactions
       .query('artwork', { tags: [ { name: 'slug', value: slug } ] })
@@ -117,12 +133,23 @@ export default class ArtByCityLegacy {
       throw new Error(`404 Publication Not Found: slug://${slug}`)
     }
 
-    return this.fetchPublication(transactions[0].id)
+    const id = transactions[0].id
+    if (this.cacheEnabled && useCache) {
+      this.caches.slugs.put(slug, id)
+    }
+
+    return this.fetchPublication(id, useCache)
   }
 
   async fetchPublication(
-    manifestId: string
+    manifestId: string,
+    useCache: boolean = true
   ): Promise<LegacyPublicationManifest> {
+    if (this.cacheEnabled && useCache) {
+      const cached = this.caches.publications.get(manifestId)
+      if (cached) { return cached }
+    }
+
     const { data, ok } = await this.transactions.fetchData(manifestId)
 
     if (!ok) {
@@ -271,10 +298,22 @@ export default class ArtByCityLegacy {
       publication.model = data.model.model
     }
 
+    if (this.cacheEnabled && useCache) {
+      this.caches.publications.put(manifestId, publication)
+    }
+
     return publication
   }
 
-  async fetchProfile(address: string): Promise<LegacyProfile | null> {
+  async fetchProfile(
+    address: string,
+    useCache: boolean = true
+  ): Promise<LegacyProfile | null> {
+    if (this.cacheEnabled && useCache) {
+      const cached = this.caches.profiles.get(address)
+      if (cached) { return cached }
+    }
+
     const {
       transactions
     } = await this.transactions.query('profile', { from: address, limit: 1 })
@@ -303,6 +342,10 @@ export default class ArtByCityLegacy {
 
       if (profile.x) {
         profile.twitter = profile.x
+      }
+
+      if (this.cacheEnabled && useCache) {
+        this.caches.profiles.put(address, profile)
       }
 
       return profile
