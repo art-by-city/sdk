@@ -70,6 +70,12 @@ export type LegacyProfile = {
   linkedin?: string
 }
 
+export type LegacyAvatar = {
+  id: string
+  src: string
+  contentType: string
+}
+
 export interface LegacyTip {
   id: string
   amount: string

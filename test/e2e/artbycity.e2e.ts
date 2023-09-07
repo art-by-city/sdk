@@ -35,11 +35,11 @@ const TIPPER_ADDRESS = 'Uy2XZ7P7F4zBllF5uPdd1ih9jiQrIGvD3X8L13cc5_s'
 const TIPPEE_ADDRESS = 'x3GW6wfBZ3wHTflETInuzJ5rOv_6JvlFi-dl6yYAr8Y'
 const JIM_ADDRESS = '36Ar8VmyC7YS7JGaep9ca2ANjLABETTpxSeA7WOV45Y'
 
-const arweave = Arweave.init({
-  protocol: 'https',
-  host: 'arweave.net',
-  port: 443
-})
+const protocol = 'https'
+const host = 'arweave.net'
+const port = 443
+const arweave = Arweave.init({ protocol, host, port })
+const gatewayRoot = `${protocol}://${host}:${port}`
 
 describe(`ArtByCity (web)`, () => {
   it('Constructs with default Arweave instance', () => {
@@ -405,6 +405,30 @@ describe(`ArtByCity (web)`, () => {
         const profile = await abc.legacy.fetchProfile(badAddress)
 
         expect(profile).to.be.null
+      })
+    })
+
+    context('Fetching Avatars', () => {
+      it('Fetches an avatar by address', async () => {
+        const abc = new ArtByCity(arweave)
+
+        const avatar = await abc.legacy.fetchAvatar(JIM_ADDRESS)
+
+        expect(avatar).to.exist
+        expect(avatar?.id).to.be.a('string').with.lengthOf(43)
+        expect(avatar?.src).to.be.a('string')
+        expect(avatar?.src.startsWith(gatewayRoot)).to.be.true
+        expect(avatar?.src.endsWith(avatar?.id)).to.be.true
+        expect(avatar?.contentType).to.be.a('string')
+      })
+
+      it('Returns null when avatar not found', async () => {
+        const abc = new ArtByCity(arweave)
+        const badAddress = '404aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaidontexist'
+
+        const avatar = await abc.legacy.fetchAvatar(badAddress)
+
+        expect(avatar).to.be.null
       })
     })
 
@@ -1120,6 +1144,59 @@ describe(`ArtByCity (web)`, () => {
           const profileAlsoNoCache = await abc.legacy.fetchProfile(PROFILE_ID)
 
           expect(profileNoCache).to.deep.equal(profileAlsoNoCache)
+          expect(getSpy).to.not.have.been.called
+          expect(putSpy).to.not.have.been.called
+        })
+      })
+
+      context('Avatars', () => {
+        it('gets avatars from memcache', async () => {
+          const address = JIM_ADDRESS
+          const abc = new ArtByCity(arweave)
+
+          const getSpy = sandbox.spy(abc.legacy.caches.avatars, 'get')
+          const putSpy = sandbox.spy(abc.legacy.caches.avatars, 'put')
+
+          const avatarNoCache = await abc.legacy.fetchAvatar(address)
+          const avatarFromCache = await abc.legacy.fetchAvatar(address)
+
+          expect(avatarNoCache).to.deep.equal(avatarFromCache)
+
+          expect(getSpy).to.have.been.calledTwice
+          expect(putSpy).to.have.been.calledOnce
+          expect(getSpy.firstCall).to.have.been.calledWith(address)
+          expect(getSpy.firstCall).to.have.returned(null)
+          expect(putSpy.firstCall).to.have.been.calledWith(address)
+          expect(getSpy.secondCall).to.have.been.calledWith(address)
+          expect(getSpy.secondCall).to.have.returned(avatarNoCache)
+        })
+
+        it('allows force override of cache', async () => {
+          const address = JIM_ADDRESS
+          const abc = new ArtByCity(arweave)
+
+          const getSpy = sandbox.spy(abc.legacy.caches.avatars, 'get')
+          const putSpy = sandbox.spy(abc.legacy.caches.avatars, 'put')
+
+          const avatarNoCache = await abc.legacy.fetchAvatar(address)
+          const avatarCacheBust = await abc.legacy.fetchAvatar(address, false)
+
+          expect(avatarNoCache).to.deep.equal(avatarCacheBust)
+          expect(getSpy).to.have.been.calledOnce.and.returned(null)
+          expect(putSpy).to.have.been.calledOnce
+        })
+
+        it('does not use cache when it is disabled', async () => {
+          const address = JIM_ADDRESS
+          const abc = new ArtByCity(arweave, { cache: { type: 'disabled' } })
+
+          const getSpy = sandbox.spy(abc.legacy.caches.avatars, 'get')
+          const putSpy = sandbox.spy(abc.legacy.caches.avatars, 'put')
+
+          const avatarNoCache = await abc.legacy.fetchAvatar(address)
+          const avatarAlsoNoCache = await abc.legacy.fetchAvatar(address)
+
+          expect(avatarNoCache).to.deep.equal(avatarAlsoNoCache)
           expect(getSpy).to.not.have.been.called
           expect(putSpy).to.not.have.been.called
         })
