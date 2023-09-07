@@ -25,7 +25,6 @@ export interface TransactionSearchResults {
 export interface LegacyTransactionQueryOpts {
   from: string | string[],
   to: string | string[],
-  environment: ArtByCityEnvironment,
   type: string
   tags: { name: string, value: string }[]
   minHeight: number
@@ -36,21 +35,17 @@ export interface LegacyTransactionQueryOpts {
 }
 
 export default class LegacyTransactions {
-  private ardb!: ArDB
-  private arweave!: Arweave
+  private readonly ardb!: ArDB
+  private readonly appName!: string
 
-  constructor(arweave: Arweave) {
-    this.arweave = arweave
+  constructor(
+    private readonly arweave: Arweave,
+    environment: ArtByCityEnvironment
+  ) {
     this.ardb = new ArDB(arweave)
-  }
 
-  async query(
-    category: DomainEntityCategory,
-    opts?: Partial<LegacyTransactionQueryOpts>
-  ): Promise<TransactionSearchResults> {
     let appName = 'ArtByCity'
-
-    switch (opts?.environment) {
+    switch (environment) {
       case 'development':
         appName = 'ArtByCity-Development'
         break
@@ -58,10 +53,16 @@ export default class LegacyTransactions {
         appName = 'ArtByCity-Staging'
         break
     }
+    this.appName = appName
+  }
 
+  async query(
+    category: DomainEntityCategory,
+    opts?: Partial<LegacyTransactionQueryOpts>
+  ): Promise<TransactionSearchResults> {
     let query = this.ardb
       .search('transactions')
-      .appName(appName)
+      .appName(this.appName)
       .tag('Category', category)
 
     if (opts?.from) {
