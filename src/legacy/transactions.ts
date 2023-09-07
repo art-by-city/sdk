@@ -15,7 +15,6 @@ export type DomainEntityCategory =
   | 'profile'
   | 'tip'
   | 'username'
-  | 'identity'
 
 export interface TransactionSearchResults {
   cursor: string

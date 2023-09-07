@@ -21,7 +21,11 @@ export default class ArtByCity {
         : 'UHPC-7wenVg-JyS81EXKCnLlKvjSbfrIsnWt1F8hueg'
 
     this.config = {
-      environment, usernamesContractId
+      environment,
+      usernamesContractId,
+      cache: {
+        type: config?.cache?.type === 'disabled' ? 'disabled' : 'memcache'
+      }
     }
     
     this.legacy = new ArtByCityLegacy(this.arweave, this.config)

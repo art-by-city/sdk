@@ -1,9 +1,12 @@
 import('mocha') // NB: this style import makes both webpack and typescript happy
 import chai, { expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
+import * as sinon from 'sinon'
+import sinonChai from 'sinon-chai'
 import Arweave from 'arweave'
 
 chai.use(chaiAsPromised)
+chai.use(sinonChai)
 
 import ArtByCity from '../../dist/web'
 import VerifiedCreators from '../../dist/web/legacy/verified-creators.json'
@@ -22,7 +25,7 @@ const AUDIO_MANIFEST_ID = 'q0GSg9bSntJQIj-FiHYApMat1e20EGM2JkdgrkhtZjI'
 const MODEL_MANIFEST_ID = 'N_nbvz1vWrNI1kl0Nxefgi3Zo0p9F-onoF1mafWaKUU'
 // const LICENSE_BUNDLE_ID = 'BgRQtrLdwexvWcbP5RKheYRGnQUsAZtZ6uKD_5A-CzE'
 const LICENSE_MANIFEST_ID = 'q0GSg9bSntJQIj-FiHYApMat1e20EGM2JkdgrkhtZjI'
-const SLUG = 'modified-icosahedron-3d'
+const MODEL_SLUG = 'modified-icosahedron-3d'
 
 const PROFILE_ID = '2aLkIcBH52s2LtZoyRQC_YaFGGSB2r2yGUtgYM5MjZc'
 const ARTIST_ADDRESS = 'YftBIDY3rUeITuEhhXBHCGY77K6VkBj70STjRyGFE4k'
@@ -190,7 +193,7 @@ describe(`ArtByCity (web)`, () => {
       it('Fetches a publication by slug', async () => {
         const abc = new ArtByCity(arweave)
 
-        const publication = await abc.legacy.fetchPublicationBySlug(SLUG)
+        const publication = await abc.legacy.fetchPublicationBySlug(MODEL_SLUG)
 
         expect(publication.id).to.be.a('string').with.length(43)
         expect(publication.category).to.equal('artwork')
@@ -199,7 +202,7 @@ describe(`ArtByCity (web)`, () => {
         )
         expect(publication.published).to.be.a('Date')
         expect(publication.year).to.be.a('string')
-        expect(publication.slug).to.equal(SLUG)
+        expect(publication.slug).to.equal(MODEL_SLUG)
         expect(publication.title).to.be.a('string')
         expect(publication.images).to.not.be.empty
         expect(publication.images[0].image).to.be.a('string').with.length(43)
@@ -211,15 +214,16 @@ describe(`ArtByCity (web)`, () => {
 
       context('Fetches publication by slug or id', () => {
         it('by slug', async () => {
+          const slug = MODEL_SLUG
           const abc = new ArtByCity(arweave)
 
-          const publication = await abc.legacy.fetchPublicationBySlugOrId(SLUG)
+          const publication = await abc.legacy.fetchPublicationBySlugOrId(slug)
           expect(publication.id).to.be.a('string').with.length(43)
           expect(publication.category).to.equal('artwork')
           expect(publication.subCategory).to.be.oneOf(
             [ 'image', 'audio', 'model' ]
           )
-          expect(publication.slug).to.equal(SLUG)
+          expect(publication.slug).to.equal(MODEL_SLUG)
         })
 
         it('by id', async () => {
@@ -688,6 +692,437 @@ describe(`ArtByCity (web)`, () => {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         expect(abc.legacy.usernames.resolve(JIM_ADDRESS))
           .to.be.rejectedWith(Error)
+      })
+    })
+
+    context('MemCache', () => {
+      const sandbox = sinon.createSandbox()
+
+      afterEach(() => {
+        sandbox.restore()
+      })
+
+      context('Config', () => {
+        it('defaults to using memcache', () => {
+          const abc = new ArtByCity(arweave)
+
+          expect(abc.config.cache.type).to.equal('memcache')
+        })
+
+        it('can be disabled via config', () => {
+          const abc = new ArtByCity(arweave, { cache: { type: 'disabled' } } )
+
+          expect(abc.config.cache.type).to.equal('disabled')
+        })
+      })
+
+      context('Publications', () => {
+        context('by publication id', () => {
+          it('gets publication from memcache', async () => {
+            const abc = new ArtByCity(arweave)
+
+            const getSpy = sandbox.spy(abc.legacy.caches.publications, 'get')
+            const putSpy = sandbox.spy(abc.legacy.caches.publications, 'put')
+
+            const publicationNoCache = await abc
+              .legacy
+              .fetchPublication(MODEL_MANIFEST_ID)
+
+            const publicationFromCache = await abc
+              .legacy
+              .fetchPublication(MODEL_MANIFEST_ID)
+
+            expect(publicationNoCache).to.deep.equal(publicationFromCache)
+            expect(getSpy).to.have.been.calledTwice
+            expect(putSpy).to.have.been.calledOnce
+            expect(getSpy.firstCall).to.have.been.calledWith(MODEL_MANIFEST_ID)
+            expect(getSpy.firstCall).to.have.returned(null)
+            expect(putSpy.firstCall).to.have.been.calledWith(MODEL_MANIFEST_ID)
+            expect(getSpy.secondCall).to.have.been.calledWith(MODEL_MANIFEST_ID)
+            expect(getSpy.secondCall).to.have.returned(publicationNoCache)
+          })
+          
+          it('allows force override of cache', async () => {
+            const abc = new ArtByCity(arweave)
+
+            const getSpy = sandbox.spy(abc.legacy.caches.publications, 'get')
+            const putSpy = sandbox.spy(abc.legacy.caches.publications, 'put')
+
+            const publicationNoCache = await abc
+              .legacy
+              .fetchPublication(MODEL_MANIFEST_ID)
+
+            const publicationCacheBust = await abc
+              .legacy
+              .fetchPublication(MODEL_MANIFEST_ID, false)
+
+            expect(publicationNoCache).to.deep.equal(publicationCacheBust)
+            expect(getSpy).to.have.been.calledOnce.and.returned(null)
+            expect(putSpy).to.have.been.calledOnce
+          })
+
+          it('does not use cache when it is disabled', async () => {
+            const abc = new ArtByCity(arweave, { cache: { type: 'disabled' } })
+
+            const getSpy = sandbox.spy(abc.legacy.caches.publications, 'get')
+            const putSpy = sandbox.spy(abc.legacy.caches.publications, 'put')
+
+            const publicationNoCache = await abc
+              .legacy
+              .fetchPublication(MODEL_MANIFEST_ID)
+
+            const publicationAlsoNoCache = await abc
+              .legacy
+              .fetchPublication(MODEL_MANIFEST_ID)
+
+            expect(publicationNoCache).to.deep.equal(publicationAlsoNoCache)
+            expect(getSpy).to.not.have.been.called
+            expect(putSpy).to.not.have.been.called
+          })
+        })
+
+        context('by slug', () => {
+          it('gets publication from memcache', async () => {
+            const manifestId = MODEL_MANIFEST_ID
+            const abc = new ArtByCity(arweave)
+
+            const getPubSpy = sandbox.spy(abc.legacy.caches.publications, 'get')
+            const putPubSpy = sandbox.spy(abc.legacy.caches.publications, 'put')
+            const getSlugSpy = sandbox.spy(abc.legacy.caches.slugs, 'get')
+            const putSlugSpy = sandbox.spy(abc.legacy.caches.slugs, 'put')
+
+            const publicationNoCache = await abc
+              .legacy
+              .fetchPublicationBySlug(MODEL_SLUG)
+
+            const publicationFromCache = await abc
+              .legacy
+              .fetchPublicationBySlug(MODEL_SLUG)
+            
+            expect(publicationNoCache).to.deep.equal(publicationFromCache)
+            expect(getPubSpy).to.have.been.calledTwice
+            expect(putPubSpy).to.have.been.calledOnce
+            expect(getPubSpy.firstCall).to.have.been.calledWith(manifestId)
+            expect(getPubSpy.firstCall).to.have.returned(null)
+            expect(putPubSpy.firstCall).to.have.been.calledWith(manifestId)
+            expect(getPubSpy.secondCall).to.have.been.calledWith(manifestId)
+            expect(getPubSpy.secondCall).to.have.returned(publicationNoCache)
+            expect(getSlugSpy).to.have.been.calledTwice
+            expect(putSlugSpy).to.have.been.calledOnce
+            expect(getSlugSpy.firstCall).to.have.been.calledWith(MODEL_SLUG)
+            expect(getSlugSpy.firstCall).to.have.returned(null)
+            expect(putSlugSpy.firstCall).to.have.been.calledWith(MODEL_SLUG)
+            expect(getSlugSpy.secondCall).to.have.been.calledWith(MODEL_SLUG)
+            expect(getSlugSpy.secondCall).to.have.returned(manifestId)
+          })
+
+          it('allows force override of cache', async () => {
+            const abc = new ArtByCity(arweave)
+
+            const getPubSpy = sandbox.spy(abc.legacy.caches.publications, 'get')
+            const putPubSpy = sandbox.spy(abc.legacy.caches.publications, 'put')
+            const getSlugSpy = sandbox.spy(abc.legacy.caches.slugs, 'get')
+            const putSlugSpy = sandbox.spy(abc.legacy.caches.slugs, 'put')
+
+            const publicationNoCache = await abc
+              .legacy
+              .fetchPublicationBySlug(MODEL_SLUG)
+
+            const publicationCacheBust = await abc
+              .legacy
+              .fetchPublicationBySlug(MODEL_SLUG, false)
+
+            expect(publicationNoCache).to.deep.equal(publicationCacheBust)
+            expect(getPubSpy).to.have.been.calledOnce.and.returned(null)
+            expect(putPubSpy).to.have.been.calledOnce
+            expect(getSlugSpy).to.have.been.calledOnce.and.returned(null)
+            expect(putSlugSpy).to.have.been.calledOnce
+          })
+
+          it('does not use cache when it is disabled', async () => {
+            const abc = new ArtByCity(arweave, { cache: { type: 'disabled' } })
+
+            const getPubSpy = sandbox.spy(abc.legacy.caches.publications, 'get')
+            const putPubSpy = sandbox.spy(abc.legacy.caches.publications, 'put')
+            const getSlugSpy = sandbox.spy(abc.legacy.caches.slugs, 'get')
+            const putSlugSpy = sandbox.spy(abc.legacy.caches.slugs, 'put')
+
+            const publicationNoCache = await abc
+              .legacy
+              .fetchPublicationBySlug(MODEL_SLUG)
+
+            const publicationAlsoNoCache = await abc
+              .legacy
+              .fetchPublicationBySlug(MODEL_SLUG)
+
+            expect(publicationNoCache).to.deep.equal(publicationAlsoNoCache)
+            expect(getPubSpy).to.not.have.been.called
+            expect(putPubSpy).to.not.have.been.called
+            expect(getSlugSpy).to.not.have.been.called
+            expect(putSlugSpy).to.not.have.been.called
+          })
+        })
+
+        context('by slug or id', () => {
+          context('by id', () => {
+            it('gets publication from memcache', async () => {
+              const manifestId = MODEL_MANIFEST_ID
+              const abc = new ArtByCity(arweave)
+
+              const getPubSpy = sandbox.spy(
+                abc.legacy.caches.publications,
+                'get'
+              )
+              const putPubSpy = sandbox.spy(
+                abc.legacy.caches.publications,
+                'put'
+              )
+              const getSlugSpy = sandbox.spy(abc.legacy.caches.slugs, 'get')
+              const putSlugSpy = sandbox.spy(abc.legacy.caches.slugs, 'put')
+  
+              const publicationNoCache = await abc
+                .legacy
+                .fetchPublicationBySlugOrId(manifestId)
+  
+              const publicationFromCache = await abc
+                .legacy
+                .fetchPublicationBySlugOrId(manifestId)
+  
+              expect(publicationNoCache).to.deep.equal(publicationFromCache)
+              expect(getPubSpy).to.have.been.calledTwice
+              expect(putPubSpy).to.have.been.calledOnce
+              expect(getPubSpy.firstCall).to.have.been.calledWith(manifestId)
+              expect(getPubSpy.firstCall).to.have.returned(null)
+              expect(putPubSpy.firstCall).to.have.been.calledWith(manifestId)
+              expect(getPubSpy.secondCall).to.have.been.calledWith(manifestId)
+              expect(getPubSpy.secondCall).to.have.returned(publicationNoCache)
+              expect(getSlugSpy).to.have.been.calledTwice
+              expect(putSlugSpy).to.not.have.been.called
+              expect(getSlugSpy.firstCall).to.have.been.calledWith(manifestId)
+              expect(getSlugSpy.firstCall).to.have.returned(null)
+              expect(getSlugSpy.secondCall).to.have.been.calledWith(manifestId)
+              expect(getSlugSpy.secondCall).to.have.returned(null)
+            })
+
+            it('allows force override of cache', async () => {
+              const manifestId = MODEL_MANIFEST_ID
+              const abc = new ArtByCity(arweave)
+
+              const getPubSpy = sandbox.spy(
+                abc.legacy.caches.publications,
+                'get'
+              )
+              const putPubSpy = sandbox.spy(
+                abc.legacy.caches.publications,
+                'put'
+              )
+              const getSlugSpy = sandbox.spy(abc.legacy.caches.slugs, 'get')
+              const putSlugSpy = sandbox.spy(abc.legacy.caches.slugs, 'put')
+  
+              const publicationNoCache = await abc
+                .legacy
+                .fetchPublicationBySlugOrId(manifestId)
+  
+              const publicationCacheBust = await abc
+                .legacy
+                .fetchPublicationBySlugOrId(manifestId, false)
+  
+              expect(publicationNoCache).to.deep.equal(publicationCacheBust)
+              expect(getPubSpy).to.have.been.calledOnce.and.returned(null)
+              expect(putPubSpy).to.have.been.calledOnce
+              expect(getSlugSpy).to.have.been.calledOnce.and.returned(null)
+              expect(putSlugSpy).to.not.have.been.called
+            })
+
+            it('does not use cache when it is disabled', async () => {
+              const manifestId = MODEL_MANIFEST_ID
+              const abc = new ArtByCity(arweave, {
+                cache: { type: 'disabled' }
+              })
+
+              const getPubSpy = sandbox.spy(
+                abc.legacy.caches.publications,
+                'get'
+              )
+              const putPubSpy = sandbox.spy(
+                abc.legacy.caches.publications,
+                'put'
+              )
+              const getSlugSpy = sandbox.spy(abc.legacy.caches.slugs, 'get')
+              const putSlugSpy = sandbox.spy(abc.legacy.caches.slugs, 'put')
+
+              const publicationNoCache = await abc
+                .legacy
+                .fetchPublicationBySlugOrId(manifestId)
+
+              const publicationAlsoNoCache = await abc
+                .legacy
+                .fetchPublicationBySlugOrId(manifestId, false)
+
+              expect(publicationNoCache).to.deep.equal(publicationAlsoNoCache)
+              expect(getPubSpy).to.not.have.been.called
+              expect(putPubSpy).to.not.have.been.called
+              expect(getSlugSpy).to.not.have.been.called
+              expect(putSlugSpy).to.not.have.been.called
+            })
+          })
+
+          context('by slug', () => {
+            it('gets publication from memcache', async () => {
+              const slug = MODEL_SLUG
+              const manifestId = MODEL_MANIFEST_ID
+              const abc = new ArtByCity(arweave)
+
+              const getPubSpy = sandbox.spy(
+                abc.legacy.caches.publications,
+                'get'
+              )
+              const putPubSpy = sandbox.spy(
+                abc.legacy.caches.publications,
+                'put'
+              )
+              const getSlugSpy = sandbox.spy(abc.legacy.caches.slugs, 'get')
+              const putSlugSpy = sandbox.spy(abc.legacy.caches.slugs, 'put')
+  
+              const publicationNoCache = await abc
+                .legacy
+                .fetchPublicationBySlugOrId(slug)
+  
+              const publicationFromCache = await abc
+                .legacy
+                .fetchPublicationBySlugOrId(slug)
+  
+              expect(publicationNoCache).to.deep.equal(publicationFromCache)
+              expect(getPubSpy).to.have.been.calledTwice
+              expect(putPubSpy).to.have.been.calledOnce
+              expect(getPubSpy.firstCall).to.have.been.calledWith(manifestId)
+              expect(getPubSpy.firstCall).to.have.returned(null)
+              expect(putPubSpy.firstCall).to.have.been.calledWith(manifestId)
+              expect(getPubSpy.secondCall).to.have.been.calledWith(manifestId)
+              expect(getPubSpy.secondCall)
+                .to.have.returned(publicationNoCache)
+              expect(getSlugSpy).to.have.been.calledTwice
+              expect(putSlugSpy).to.have.been.calledOnce
+              expect(getSlugSpy.firstCall).to.have.been.calledWith(slug)
+              expect(getSlugSpy.firstCall).to.have.returned(null)
+              expect(getSlugSpy.secondCall).to.have.been.calledWith(slug)
+              expect(getSlugSpy.secondCall).to.have.returned(manifestId)
+            })
+
+            it('allows force override of cache', async () => {
+              const slug = MODEL_SLUG
+              const abc = new ArtByCity(arweave)
+
+              const getPubSpy = sandbox.spy(
+                abc.legacy.caches.publications,
+                'get'
+              )
+              const putPubSpy = sandbox.spy(
+                abc.legacy.caches.publications,
+                'put'
+              )
+              const getSlugSpy = sandbox.spy(abc.legacy.caches.slugs, 'get')
+              const putSlugSpy = sandbox.spy(abc.legacy.caches.slugs, 'put')
+  
+              const publicationNoCache = await abc
+                .legacy
+                .fetchPublicationBySlugOrId(slug)
+  
+              const publicationCacheBust = await abc
+                .legacy
+                .fetchPublicationBySlugOrId(slug, false)
+  
+              expect(publicationNoCache).to.deep.equal(publicationCacheBust)
+              expect(getPubSpy).to.have.been.calledOnce.and.returned(null)
+              expect(putPubSpy).to.have.been.calledOnce
+              expect(getSlugSpy).to.have.been.calledOnce.and.returned(null)
+              expect(putSlugSpy).to.have.been.calledOnce
+            })
+
+            it('does not use cache when it is disabled', async () => {
+              const slug = MODEL_SLUG
+              const abc = new ArtByCity(arweave, {
+                cache: { type: 'disabled' }
+              })
+
+              const getPubSpy = sandbox.spy(
+                abc.legacy.caches.publications,
+                'get'
+              )
+              const putPubSpy = sandbox.spy(
+                abc.legacy.caches.publications,
+                'put'
+              )
+              const getSlugSpy = sandbox.spy(abc.legacy.caches.slugs, 'get')
+              const putSlugSpy = sandbox.spy(abc.legacy.caches.slugs, 'put')
+
+              const publicationNoCache = await abc
+                .legacy
+                .fetchPublicationBySlugOrId(slug)
+
+              const publicationAlsoNoCache = await abc
+                .legacy
+                .fetchPublicationBySlugOrId(slug, false)
+
+              expect(publicationNoCache).to.deep.equal(publicationAlsoNoCache)
+              expect(getPubSpy).to.not.have.been.called
+              expect(putPubSpy).to.not.have.been.called
+              expect(getSlugSpy).to.not.have.been.called
+              expect(putSlugSpy).to.not.have.been.called
+            })
+          })
+        })
+      })
+
+      context('Profiles', () => {
+        it('gets profiles from memcache', async () => {
+          const abc = new ArtByCity(arweave)
+
+          const getSpy = sandbox.spy(abc.legacy.caches.profiles, 'get')
+          const putSpy = sandbox.spy(abc.legacy.caches.profiles, 'put')
+
+          const profileNoCache = await abc.legacy.fetchProfile(PROFILE_ID)
+          const profileFromCache = await abc.legacy.fetchProfile(PROFILE_ID)
+
+          expect(profileNoCache).to.deep.equal(profileFromCache)
+          expect(getSpy).to.have.been.calledTwice
+          expect(putSpy).to.have.been.calledOnce
+          expect(getSpy.firstCall).to.have.been.calledWith(PROFILE_ID)
+          expect(getSpy.firstCall).to.have.returned(null)
+          expect(putSpy.firstCall).to.have.been.calledWith(PROFILE_ID)
+          expect(getSpy.secondCall).to.have.been.calledWith(PROFILE_ID)
+          expect(getSpy.secondCall).to.have.returned(profileNoCache)
+        })
+
+        it('allows force override of cache', async () => {
+          const abc = new ArtByCity(arweave)
+
+          const getSpy = sandbox.spy(abc.legacy.caches.profiles, 'get')
+          const putSpy = sandbox.spy(abc.legacy.caches.profiles, 'put')
+
+          const profileNoCache = await abc.legacy.fetchProfile(PROFILE_ID)
+          const profileCacheBust = await abc
+            .legacy
+            .fetchProfile(PROFILE_ID, false)
+
+          expect(profileNoCache).to.deep.equal(profileCacheBust)
+          expect(getSpy).to.have.been.calledOnce.and.returned(null)
+          expect(putSpy).to.have.been.calledOnce
+        })
+
+        it('does not use cache when it is disabled', async () => {
+          const abc = new ArtByCity(arweave, { cache: { type: 'disabled' } })
+
+          const getSpy = sandbox.spy(abc.legacy.caches.profiles, 'get')
+          const putSpy = sandbox.spy(abc.legacy.caches.profiles, 'put')
+
+          const profileNoCache = await abc.legacy.fetchProfile(PROFILE_ID)
+          const profileAlsoNoCache = await abc.legacy.fetchProfile(PROFILE_ID)
+
+          expect(profileNoCache).to.deep.equal(profileAlsoNoCache)
+          expect(getSpy).to.not.have.been.called
+          expect(putSpy).to.not.have.been.called
+        })
       })
     })
   })
