@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "skipLibCheck": true,
-    "outDir": "./dist/web/",
+    "outDir": "./dist/web",
     "strict": true,
     "target": "ES2022",
     "moduleResolution": "node",
