@@ -1,5 +1,5 @@
 {
-  "name": "sdk",
+  "name": "@artbycity/sdk",
   "version": "0.0.1",
   "description": "Art By City JavaScript SDK",
   "license": "AGPL-3.0-only",
@@ -21,12 +21,17 @@
     "arweave",
     "artbycity",
     "sdk",
-    "art-by-city"
+    "art-by-city",
+    "permaweb",
+    "publishing",
+    "art"
   ],
   "engines": {
     "node": "~18.16.0"
   },
-  "main": "index.js",
+  "main": "./dist/node/index.js",
+  "browser": "./dist/web/index.js",
+  "files": [ "dist" ],
   "scripts": {
     "arlocal": "arlocal --hidelogs --persist --dbpath .db",
     "build": "rimraf dist && npm run build:node && npm run build:web",
@@ -34,6 +39,8 @@
     "build:web": "rimraf dist/web && tsc --project tsconfig.web.json",
     "bundle:tests": "rimraf bundles && webpack --config-name web-tests",
     "lint": "eslint .",
+    "preversion": "npm run build",
+    "postversion": "git push --tags",
     "test": "mocha -r ts-node/register test/spec/*.ts test/spec/**/*.ts",
     "test:e2e": "npm run build && mocha -r ts-node/register test/e2e/**/*.ts",
     "test:e2e:web": "npm run build:web && npm run bundle:tests && opener ./test/e2e/web-runner.html"
