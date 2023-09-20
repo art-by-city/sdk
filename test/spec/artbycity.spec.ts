@@ -24,8 +24,8 @@ describe('ArtByCity SDK', () => {
     const abcNoConfig = new ArtByCity()
     const abcWithConfig = new ArtByCity(arweave)
 
-    expect(abcNoConfig.environment).to.equal('production')
-    expect(abcWithConfig.environment).to.equal('production')
+    expect(abcNoConfig.config.environment).to.equal('production')
+    expect(abcWithConfig.config.environment).to.equal('production')
   })
 
   it('Constructs with optional environment config', () => {
@@ -33,7 +33,7 @@ describe('ArtByCity SDK', () => {
     const arweave = Arweave.init({})
     const abc = new ArtByCity(arweave, { environment })
 
-    expect(abc.environment).to.equal(environment)
+    expect(abc.config.environment).to.equal(environment)
   })
 
   it('Initializes Legacy module', () => {
