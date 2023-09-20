@@ -40,7 +40,7 @@
     "bundle:tests": "rimraf bundles && webpack --config-name web-tests",
     "lint": "eslint .",
     "preversion": "npm run test && npm run lint",
-    "version": "npm run build && git tag -a v$npm_package_version",
+    "version": "npm run build",
     "postversion": "git push --tags",
     "test": "mocha -r ts-node/register test/spec/*.ts test/spec/**/*.ts",
     "test:e2e": "npm run build && mocha -r ts-node/register test/e2e/**/*.ts",
