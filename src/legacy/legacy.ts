@@ -28,12 +28,14 @@ export default class ArtByCityLegacy {
     profiles: LegacyMemcache<LegacyProfile>
     avatars: LegacyMemcache<LegacyAvatar>
     likes: LegacyMemcache<LegacyLikesFeed>
+    tips: LegacyMemcache<LegacyTipsFeed>
   } = { /* eslint-disable indent */
     publications: new LegacyMemcache<LegacyPublicationManifest>(),
     slugs: new LegacyMemcache<string>(),
     profiles: new LegacyMemcache<LegacyProfile>(),
     avatars: new LegacyMemcache<LegacyAvatar>(),
-    likes: new LegacyMemcache<LegacyLikesFeed>()
+    likes: new LegacyMemcache<LegacyLikesFeed>(),
+    tips: new LegacyMemcache<LegacyTipsFeed>()
   } /* eslint-enable indent */
 
   constructor(arweave: Arweave, private readonly config: ArtByCityConfig) {
@@ -437,9 +439,16 @@ export default class ArtByCityLegacy {
 
   async queryLikesForPublication(
     id: string,
-    limit: number | 'all' = 100,
-    cursor?: string
+    limit: number | 'all' = 'all',
+    cursor?: string,
+    useCache: boolean = true
   ): Promise<LegacyLikesFeed> {
+    const cacheKey = `likes-for-${id}`
+    if (this.cacheEnabled && useCache && limit === 'all') {
+      const cached = this.caches.likes.get(cacheKey)
+      if (cached) { return cached }
+    }
+
     const {
       transactions,
       cursor: nextCursor
@@ -449,18 +458,31 @@ export default class ArtByCityLegacy {
       tags: [ { name: 'liked-entity', value: id } ]
     })
 
-    return {
+    const feed = {
       cursor: nextCursor,
       likes: transactions.map(mapLegacyLikeFromTransaction)
     }
+
+    if (this.cacheEnabled && useCache && limit === 'all') {
+      this.caches.likes.put(cacheKey, feed)
+    }
+
+    return feed
   }
 
   async queryTips(
     address: string,
     receivedOrSent: 'received' | 'sent',
-    limit: number | 'all' = 100,
-    cursor?: string
+    limit: number | 'all' = 'all',
+    cursor?: string,
+    useCache: boolean = true
   ): Promise<LegacyTipsFeed> {
+    const cacheKey = `${receivedOrSent}-by-${address}`
+    if (this.cacheEnabled && useCache && limit === 'all') {
+      const cached = this.caches.tips.get(cacheKey)
+      if (cached) { return cached }
+    }
+
     const receivedOrSentOpts = receivedOrSent === 'received'
       ? { to: address }
       : { from: address }
@@ -474,7 +496,7 @@ export default class ArtByCityLegacy {
       cursor
     })
 
-    return {
+    const feed = {
       cursor: nextCursor,
       tips: transactions.map(tx => {
         return {
@@ -486,5 +508,11 @@ export default class ArtByCityLegacy {
         }
       })
     }
+
+    if (this.cacheEnabled && useCache && limit === 'all') {
+      this.caches.tips.put(cacheKey, feed)
+    }
+
+    return feed
   }
 }
