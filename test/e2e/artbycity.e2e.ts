@@ -1201,6 +1201,208 @@ describe(`ArtByCity (web)`, () => {
           expect(putSpy).to.not.have.been.called
         })
       })
+
+      context('Likes', () => {
+        context('sent by address', () => {
+          it('gets queries for all likes from memcache', async () => {
+            const address = LIKER_ADDRESS
+            const cacheKey = `sent-by-${address}`
+            const abc = new ArtByCity(arweave)
+
+            const getSpy = sandbox.spy(abc.legacy.caches.likes, 'get')
+            const putSpy = sandbox.spy(abc.legacy.caches.likes, 'put')
+
+            const likesNoCache = await abc.legacy.queryLikes(address, 'sent')
+            const likesFromCache = await abc.legacy.queryLikes(address, 'sent')
+
+            expect(likesNoCache).to.deep.equal(likesFromCache)
+            expect(getSpy).to.have.been.calledTwice
+            expect(putSpy).to.have.been.calledOnce
+            expect(getSpy.firstCall).to.have.been.calledWith(cacheKey)
+            expect(getSpy.firstCall).to.have.returned(null)
+            expect(putSpy.firstCall).to.have.been.calledWith(cacheKey)
+            expect(getSpy.secondCall).to.have.been.calledWith(cacheKey)
+            expect(getSpy.secondCall).to.have.returned(likesNoCache)
+          })
+
+          it('allows force override of cache', async () => {
+            const address = LIKER_ADDRESS
+            const abc = new ArtByCity(arweave)
+  
+            const getSpy = sandbox.spy(abc.legacy.caches.likes, 'get')
+            const putSpy = sandbox.spy(abc.legacy.caches.likes, 'put')
+  
+            const likesNoCache = await abc.legacy.queryLikes(address, 'sent')
+            const likesCacheBust = await abc.legacy
+              .queryLikes(address, 'sent', 'all', undefined, false)
+  
+            expect(likesNoCache).to.deep.equal(likesCacheBust)
+            expect(getSpy).to.have.been.calledOnce.and.returned(null)
+            expect(putSpy).to.have.been.calledOnce
+          })
+
+          it('does not use cache when it is disabled', async () => {
+            const address = LIKER_ADDRESS
+            const abc = new ArtByCity(arweave, { cache: { type: 'disabled' } })
+  
+            const getSpy = sandbox.spy(abc.legacy.caches.likes, 'get')
+            const putSpy = sandbox.spy(abc.legacy.caches.likes, 'put')
+  
+            const likesNoCache = await abc.legacy.queryLikes(address, 'sent')
+            const likesAlsoNoCache = await abc.legacy
+              .queryLikes(address, 'sent')
+  
+            expect(likesNoCache).to.deep.equal(likesAlsoNoCache)
+            expect(getSpy).to.not.have.been.called
+            expect(putSpy).to.not.have.been.called
+          })
+
+          it('does not use cache when not querying for all', async () => {
+            const address = LIKER_ADDRESS
+            const abc = new ArtByCity(arweave)
+
+            const getSpy = sandbox.spy(abc.legacy.caches.likes, 'get')
+            const putSpy = sandbox.spy(abc.legacy.caches.likes, 'put')
+
+            const threeLikes = await abc.legacy.queryLikes(address, 'sent', 3)
+            const alsoThreeLikes = await abc.legacy
+              .queryLikes(address, 'sent', 3)
+
+            expect(threeLikes.likes).to.deep.equal(alsoThreeLikes.likes)
+            expect(getSpy).to.not.have.been.called
+            expect(putSpy).to.not.have.been.called
+          })
+        })
+
+        context('received by address', () => {
+          it('gets queries for all likes from memcache', async () => {
+            const address = ARTIST_ADDRESS
+            const cacheKey = `received-by-${address}`
+            const abc = new ArtByCity(arweave)
+
+            const getSpy = sandbox.spy(abc.legacy.caches.likes, 'get')
+            const putSpy = sandbox.spy(abc.legacy.caches.likes, 'put')
+
+            const likesNoCache = await abc.legacy
+              .queryLikes(address, 'received')
+            const likesFromCache = await abc.legacy
+              .queryLikes(address, 'received')
+
+            expect(likesNoCache).to.deep.equal(likesFromCache)
+            expect(getSpy).to.have.been.calledTwice
+            expect(putSpy).to.have.been.calledOnce
+            expect(getSpy.firstCall).to.have.been.calledWith(cacheKey)
+            expect(getSpy.firstCall).to.have.returned(null)
+            expect(putSpy.firstCall).to.have.been.calledWith(cacheKey)
+            expect(getSpy.secondCall).to.have.been.calledWith(cacheKey)
+            expect(getSpy.secondCall).to.have.returned(likesNoCache)
+          })
+
+          it('allows force override of cache', async () => {
+            const address = ARTIST_ADDRESS
+            const abc = new ArtByCity(arweave)
+  
+            const getSpy = sandbox.spy(abc.legacy.caches.likes, 'get')
+            const putSpy = sandbox.spy(abc.legacy.caches.likes, 'put')
+  
+            const likesNoCache = await abc.legacy
+              .queryLikes(address, 'received')
+            const likesCacheBust = await abc.legacy
+              .queryLikes(address, 'received', 'all', undefined, false)
+  
+            expect(likesNoCache).to.deep.equal(likesCacheBust)
+            expect(getSpy).to.have.been.calledOnce.and.returned(null)
+            expect(putSpy).to.have.been.calledOnce
+          })
+
+          it('does not use cache when it is disabled', async () => {
+            const address = ARTIST_ADDRESS
+            const abc = new ArtByCity(arweave, { cache: { type: 'disabled' } })
+  
+            const getSpy = sandbox.spy(abc.legacy.caches.likes, 'get')
+            const putSpy = sandbox.spy(abc.legacy.caches.likes, 'put')
+  
+            const likesNoCache = await abc.legacy
+              .queryLikes(address, 'received')
+            const likesAlsoNoCache = await abc.legacy
+              .queryLikes(address, 'received')
+  
+            expect(likesNoCache).to.deep.equal(likesAlsoNoCache)
+            expect(getSpy).to.not.have.been.called
+            expect(putSpy).to.not.have.been.called
+          })
+
+          it('does not use cache when not querying for all', async () => {
+            const address = ARTIST_ADDRESS
+            const abc = new ArtByCity(arweave)
+
+            const getSpy = sandbox.spy(abc.legacy.caches.likes, 'get')
+            const putSpy = sandbox.spy(abc.legacy.caches.likes, 'put')
+
+            const threeLikes = await abc.legacy
+              .queryLikes(address, 'received', 3)
+            const alsoThreeLikes = await abc.legacy
+              .queryLikes(address, 'received', 3)
+
+            expect(threeLikes.likes).to.deep.equal(alsoThreeLikes.likes)
+            expect(getSpy).to.not.have.been.called
+            expect(putSpy).to.not.have.been.called
+          })
+        })
+
+        context('by publication', () => {
+          it('gets queries for all likes from memcache', async () => {
+            const id = LIKED_PUBLICATION
+            const cacheKey = `likes-for-${id}`
+            const abc = new ArtByCity(arweave)
+
+            const getSpy = sandbox.spy(abc.legacy.caches.likes, 'get')
+            const putSpy = sandbox.spy(abc.legacy.caches.likes, 'put')
+
+            const likesNoCache = await abc.legacy
+              .queryLikesForPublication(id)
+            const likesFromCache = await abc.legacy
+              .queryLikesForPublication(id)
+
+            expect(likesNoCache).to.deep.equal(likesFromCache)
+            expect(getSpy).to.have.been.calledTwice
+            expect(putSpy).to.have.been.calledOnce
+            expect(getSpy.firstCall).to.have.been.calledWith(cacheKey)
+            expect(getSpy.firstCall).to.have.returned(null)
+            expect(putSpy.firstCall).to.have.been.calledWith(cacheKey)
+            expect(getSpy.secondCall).to.have.been.calledWith(cacheKey)
+            expect(getSpy.secondCall).to.have.returned(likesNoCache)
+          })
+
+          it('allows force override of cache')
+
+          it('does not use cache when it is disabled')
+
+          it('does not use cache when not querying for all')
+        })
+      })
+
+      context('Tips', () => {
+        context('sent by address', () => {
+          it('gets queries for all tips from memcache')
+
+          it('allows force override of cache')
+
+          it('does not use cache when it is disabled')
+
+          it('does not use cache when not querying for all')
+        })
+
+        context('received by address', () => {
+          it('gets queries for all tips from memcache')
+
+          it('allows force override of cache')
+
+          it('does not use cache when it is disabled')
+
+          it('does not use cache when not querying for all')
+        })
+      })
     })
   })
 })
