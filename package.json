@@ -1,6 +1,6 @@
 {
   "name": "@artbycity/sdk",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Art By City JavaScript SDK",
   "license": "AGPL-3.0-only",
   "contributors": [
@@ -31,7 +31,9 @@
   },
   "main": "./dist/node/index.js",
   "browser": "./dist/web/index.js",
-  "files": [ "dist" ],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "arlocal": "arlocal --hidelogs --persist --dbpath .db",
     "build": "rimraf dist && npm run build:node && npm run build:web",
