@@ -1,30 +1,17 @@
 import Arweave from 'arweave'
 
+import { JWKInterface } from '../util/types'
 import { ArtByCityConfig } from '../config'
-import ArtByCity from './client'
+import BaseArtByCityClient from './base'
 
-export type PublicationType = 'image' | 'audio'
-export interface BasePublicationOptions {
-  type: PublicationType
-}
-export interface ImagePublicationOptions extends BasePublicationOptions {
-  type: 'image'
-}
-export interface AudioPublicationOptions extends BasePublicationOptions {
-  type: 'audio'
-}
-
-export default class AuthenticatedArtByCityClient extends ArtByCity {
+export default class AuthenticatedArtByCityClient extends BaseArtByCityClient {
   constructor(
     public readonly arweave: Arweave,
-    public readonly config: ArtByCityConfig
+    public readonly config: ArtByCityConfig,
+    public wallet: JWKInterface | 'use_wallet'
   ) {
     super(arweave, config)
   }
 
-  async publish(what: 'image', opts: ImagePublicationOptions): Promise<string>
-  async publish(what: 'audio', opts: AudioPublicationOptions): Promise<string>
-  async publish(what: PublicationType): Promise<string> {
-    throw new Error('not yet implemented!')
-  }
+  // private async publishImage(opts: ImagePublicationOptions): Promise<string> {}
 }

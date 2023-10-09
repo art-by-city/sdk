@@ -71,4 +71,8 @@ describe('ArtByCity SDK', () => {
       return expect(abc.connect()).to.be.rejectedWith(Error)
     })
   })
+
+  context.only('Authenticated Client', () => {
+    context.only('Publishing')
+  })
 })
