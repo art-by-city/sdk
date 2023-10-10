@@ -24,10 +24,15 @@ export default class ArtByCityCurations {
   }
 
   async createdBy(creator: string, cursor?: string) {
-    const query = this.ardb
+    let query = this.ardb
       .search('transactions')
       .from(creator)
       .tag('Type', 'curation')
+
+    if (cursor) {
+      query = query.cursor(cursor)
+    }
+
     const transactions = await query.findAll({
       sort: 'HEIGHT_DESC'
     }) as ArdbTransaction[]
