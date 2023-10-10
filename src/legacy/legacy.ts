@@ -82,6 +82,7 @@ export default class ArtByCityLegacy {
 
         return {
           id: tx.id,
+          creator: tx.owner.address,
           category: 'artwork',
           subCategory,
           slug: slugTag?.value || tx.id
