@@ -48,7 +48,6 @@ export interface LegacyPublicationManifest
 {
   published: Date
   year: string
-  
   title: string
   description?: string
   medium?: string
