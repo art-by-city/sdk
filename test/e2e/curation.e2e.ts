@@ -8,7 +8,8 @@ import ArtByCity, { ArtByCityConfig } from '../../src'
 import { CurationContractStates } from '../../src/curation'
 
 LoggerFactory.INST.logLevel('error')
-const jwk: JWKInterface = TestweaveJWK
+/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
+const jwk: JWKInterface = TestweaveJWK as JWKInterface
 const arweave = Arweave.init({
   protocol: 'http',
   host: 'localhost',
