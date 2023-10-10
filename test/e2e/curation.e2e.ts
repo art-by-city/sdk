@@ -75,11 +75,21 @@ describe('ArtByCity Curation Module', () => {
       const address = await arweave.wallets.jwkToAddress(jwk)
       const abc = new ArtByCity(arweave, config)
 
+      console.log('latest', ownableCurationContractId)
       const curation = abc.curations.get(ownableCurationContractId)
       const { cachedValue: { state } } = await curation.readState()
       
       expect(state).to.be.an('object').with.property('owner')
       expect(state.owner).to.be.a('string').that.equals(address)
+    })
+
+    it('queries curations by creator', async () => {
+      const address = await arweave.wallets.jwkToAddress(jwk)
+      const abc = new ArtByCity(arweave, config)
+
+      const { curations } = await abc.curations.createdBy(address)
+
+      expect(curations).to.be.an('array').that.is.not.empty
     })
   })
 })

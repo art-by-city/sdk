@@ -23,16 +23,30 @@ export default class AuthenticatedArtByCityCurations
     super(arweave, warp, config)
   }
 
-  private determineSourceTxId(type: CurationType): string {
+  private determineCurationType(
+    type: CurationType
+  ): { srcTxId: string, contractName: string } {
     switch (type) {
       case 'ownable':
-        return this.config.contracts.curation.ownable
+        return {
+          srcTxId: this.config.contracts.curation.ownable,
+          contractName: 'Ownable-Curation-Contract'
+        }
       case 'whitelist':
-        return this.config.contracts.curation.whitelist
+        return {
+          srcTxId: this.config.contracts.curation.whitelist,
+          contractName: 'Whitelist-Curation-Contract'
+        }
       case 'collaborative':
-        return this.config.contracts.curation.collaborative
+        return {
+          srcTxId: this.config.contracts.curation.collaborative,
+          contractName: 'Collaborative-Curation-Contract'
+        }
       case 'collaborative-whitelist':
-        return this.config.contracts.curation.collaborativeWhitelist
+        return {
+          srcTxId: this.config.contracts.curation.collaborativeWhitelist,
+          contractName: 'Collaborative-Whitelist-Curation-Contract'
+        }
       default:
         throw new UnknownCurationTypeError()
     }
@@ -72,9 +86,11 @@ export default class AuthenticatedArtByCityCurations
   }
 
   async create(type: CurationType, opts: CurationCreationOptions) {
-    const srcTxId = this.determineSourceTxId(type)
+    const { srcTxId, contractName } = this.determineCurationType(type)
     const initialState = this.createInitialState(type, opts)
     const tags: Tag[] = [
+      new Tag('Contract-Name', contractName),
+
       // ArtByCity / ArFS Entity-Type
       new Tag('Entity-Type', 'curation'),
 
