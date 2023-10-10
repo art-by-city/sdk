@@ -9,7 +9,15 @@ export type CacheStrategy = 'disabled' | 'memcache'
 
 export type ArtByCityConfig = {
   environment: ArtByCityEnvironment
-  usernamesContractId: string
+  contracts: {
+    usernames: string
+    curation: {
+      ownable: string
+      whitelist: string
+      collaborative: string
+      collaborativeWhitelist: string
+    }
+  }
   cache: {
     type: CacheStrategy
   }

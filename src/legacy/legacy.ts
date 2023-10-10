@@ -1,4 +1,5 @@
 import Arweave from 'arweave'
+import { Warp } from 'warp-contracts'
 
 import { ArtByCityConfig } from '../config'
 import VerifiedCreators from './verified-creators.json'
@@ -38,11 +39,15 @@ export default class ArtByCityLegacy {
     tips: new LegacyMemcache<LegacyTipsFeed>()
   } /* eslint-enable indent */
 
-  constructor(arweave: Arweave, private readonly config: ArtByCityConfig) {
+  constructor(
+    arweave: Arweave,
+    warp: Warp,
+    private readonly config: ArtByCityConfig
+  ) {
     this.transactions = new LegacyTransactions(arweave, config.environment)
     this.usernames = new LegacyUsernames(
-      config.usernamesContractId,
-      config.environment
+      warp,
+      config.contracts.usernames
     )
     this.cacheEnabled = config.cache.type === 'memcache'
     const { protocol, host, port } = arweave.api.getConfig()
