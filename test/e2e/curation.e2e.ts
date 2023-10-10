@@ -1,13 +1,14 @@
 import 'mocha'
 import { expect } from 'chai'
 import Arweave from 'arweave'
-import { LoggerFactory, WarpFactory } from 'warp-contracts'
+import { JWKInterface, LoggerFactory, WarpFactory } from 'warp-contracts'
 
 import TestweaveJWK from '../../.secrets/testweave-keyfile.json'
 import ArtByCity, { ArtByCityConfig } from '../../src'
 import { CurationContractStates } from '../../src/curation'
 
 LoggerFactory.INST.logLevel('error')
+const jwk: JWKInterface = TestweaveJWK
 const arweave = Arweave.init({
   protocol: 'http',
   host: 'localhost',
@@ -33,13 +34,13 @@ let ownableCurationContractId: string = ''
 describe('ArtByCity Curation Module', () => {
   context('Authenticated', () => {
     it('creates ownable curation contracts', async () => {
-      const address = await arweave.wallets.jwkToAddress(TestweaveJWK)
+      const address = await arweave.wallets.jwkToAddress(jwk)
       const abc = new ArtByCity(arweave, config)
       const title = 'My Ownable Curation'
       const description = 'My Ownable Curation Description'
 
       const id = await abc
-        .connect(TestweaveJWK)
+        .connect(jwk)
         .curations
         .create('ownable', {
           owner: address,
@@ -70,7 +71,7 @@ describe('ArtByCity Curation Module', () => {
   })
   context('Unauthenticated', () => {
     it('fetches curation contracts by id', async () => {
-      const address = await arweave.wallets.jwkToAddress(TestweaveJWK)
+      const address = await arweave.wallets.jwkToAddress(jwk)
       const abc = new ArtByCity(arweave, config)
 
       const curation = abc.curations.get(ownableCurationContractId)
