@@ -20,3 +20,6 @@ bundles/
 
 # arlocal db
 .db/
+
+# secrets
+.secrets
