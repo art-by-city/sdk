@@ -1,13 +1,10 @@
 import 'mocha'
-import chai, { expect } from 'chai'
-import chaiAsPromised from 'chai-as-promised'
+import { expect } from 'chai'
 import Arweave from 'arweave'
 
 import ArtByCity, { ArtByCityEnvironment } from '../../src'
 import ArtByCityLegacy from '../../src/legacy'
 import { JWKInterface } from '../../src/util/types'
-
-chai.use(chaiAsPromised)
 
 describe('ArtByCity SDK', () => {
   it('Constructs with default Arweave instance', () => {
@@ -65,14 +62,10 @@ describe('ArtByCity SDK', () => {
       expect(abc.wallet).to.equal(jwk)
     })
 
-    it('but throws when wallet provider unavailable', async () => {
+    it('but throws when wallet provider unavailable', () => {
       const abc = new ArtByCity()
 
-      return expect(abc.connect()).to.be.rejectedWith(Error)
+      expect(() => abc.connect()).to.throw(Error)
     })
   })
-
-  // context.only('Authenticated Client', () => {
-  //   context.only('Publishing')
-  // })
 })
