@@ -2,7 +2,7 @@ import Arweave from 'arweave'
 import { Contract, Warp } from 'warp-contracts'
 
 import { ArtByCityConfig } from '../config'
-import { CurationContractStates, OwnableCurationState } from './'
+import { CurationContractStates } from './'
 
 export default class ArtByCityCurations {
   constructor(
@@ -11,9 +11,9 @@ export default class ArtByCityCurations {
     protected readonly config: ArtByCityConfig
   ) {}
 
-  async get<State extends CurationContractStates>(
+  get<State extends CurationContractStates>(
     curationId: string
-  ): Promise<Contract<State>> {
+  ): Contract<State> {
     return this.warp.contract<State>(curationId)
   }
 }

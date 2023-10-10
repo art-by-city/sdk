@@ -1,9 +1,9 @@
 import 'mocha'
-import { expect } from 'chai'
-import Arweave from 'arweave'
+// import { expect } from 'chai'
+// import Arweave from 'arweave'
 
-import ArtByCityLegacy from '../../../src/legacy'
-import VerifiedCreators from '../../../src/legacy/verified-creators.json'
+// import ArtByCityLegacy from '../../../src/legacy'
+// import VerifiedCreators from '../../../src/legacy/verified-creators.json'
 
 describe('ArtByCity Legacy Module', () => {
   describe('Verified Creators', () => {

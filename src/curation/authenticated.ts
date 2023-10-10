@@ -11,7 +11,9 @@ import {
   UnknownCurationTypeError,
 } from './'
 
-export default class AuthenticatedArtByCityCurations extends ArtByCityCurations {
+export default class AuthenticatedArtByCityCurations
+  extends ArtByCityCurations
+{
   constructor(
     arweave: Arweave,
     protected warp: Warp,

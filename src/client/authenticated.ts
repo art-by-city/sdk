@@ -23,6 +23,4 @@ export default class AuthenticatedArtByCityClient extends BaseArtByCityClient {
       this.wallet
     )
   }
-
-  // private async publishImage(opts: ImagePublicationOptions): Promise<string> {}
 }

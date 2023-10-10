@@ -47,10 +47,10 @@ describe('ArtByCity SDK', () => {
   })
 
   context('Allows creating an authenticated client', () => {
-    it('from a wallet provider (web)', async () => {
+    it('from a wallet provider (web)', () => {
       global.window = { arweaveWallet: {} } as (Window & typeof globalThis)
 
-      const abc = await new ArtByCity().connect()
+      const abc = new ArtByCity().connect()
 
       expect(abc.wallet).to.equal('use_wallet')
 
@@ -58,9 +58,9 @@ describe('ArtByCity SDK', () => {
       global.window = undefined
     })
 
-    it('from a wallet keyfile', async () => {
+    it('from a wallet keyfile', () => {
       const jwk = { mock: 'keyfile' } as unknown as JWKInterface
-      const abc = await new ArtByCity().connect(jwk)
+      const abc = new ArtByCity().connect(jwk)
 
       expect(abc.wallet).to.equal(jwk)
     })

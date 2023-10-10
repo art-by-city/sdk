@@ -1,11 +1,11 @@
 import 'mocha'
-import chai, { expect } from 'chai'
-import chaiAsPromised from 'chai-as-promised'
+import { expect } from 'chai'
 import Arweave from 'arweave'
 import { LoggerFactory, WarpFactory } from 'warp-contracts'
 
 import TestweaveJWK from '../../.secrets/testweave-keyfile.json'
 import ArtByCity, { ArtByCityConfig } from '../../src'
+import { CurationContractStates } from '../../src/curation'
 
 LoggerFactory.INST.logLevel('error')
 const arweave = Arweave.init({
@@ -47,7 +47,7 @@ describe('ArtByCity Curation Module', () => {
           description
         })
 
-      const curation = warp.contract<any>(id)
+      const curation = warp.contract<CurationContractStates>(id)
       const { cachedValue: { state } } = await curation.readState()
       
       expect(id).to.be.a('string').with.length(43)
@@ -73,7 +73,7 @@ describe('ArtByCity Curation Module', () => {
       const address = await arweave.wallets.jwkToAddress(TestweaveJWK)
       const abc = new ArtByCity(arweave, config)
 
-      const curation = await abc.curations.get(ownableCurationContractId)
+      const curation = abc.curations.get(ownableCurationContractId)
       const { cachedValue: { state } } = await curation.readState()
       
       expect(state).to.be.an('object').with.property('owner')

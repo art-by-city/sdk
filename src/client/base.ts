@@ -65,6 +65,10 @@ export default class ArtByCity {
       : WarpFactory.forLocal()
     this.warp = this.warp.use(new DeployPlugin())
     this.legacy = new ArtByCityLegacy(this.arweave, this.warp, this.config)
-    this.curations = new ArtByCityCurations(this.arweave, this.warp, this.config)
+    this.curations = new ArtByCityCurations(
+      this.arweave,
+      this.warp,
+      this.config
+    )
   }
 }
