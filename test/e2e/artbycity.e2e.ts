@@ -710,7 +710,15 @@ describe(`ArtByCity (web)`, () => {
 
       it('throws when username contract not available', () => {
         const abc = new ArtByCity(arweave, {
-          usernamesContractId: 'bad-contract-id'
+          contracts: {
+            usernames: 'bad-contract-id',
+            curation: {
+              ownable: 'bad-contract-id',
+              whitelist: 'bad-contract-id',
+              collaborative: 'bad-contract-id',
+              collaborativeWhitelist: 'bad-contract-id'
+            }
+          }
         })
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
