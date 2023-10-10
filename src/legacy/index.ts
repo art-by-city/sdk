@@ -37,6 +37,7 @@ export type LegacyPublicationManifestLicense = {
 
 export type LegacyPublicationManifestBase = {
   id: string
+  creator: string
   category: 'artwork'
   subCategory: 'image' | 'audio' | 'model'
   slug: string
@@ -47,7 +48,6 @@ export interface LegacyPublicationManifest
 {
   published: Date
   year: string
-  creator: string
   title: string
   description?: string
   medium?: string
