@@ -179,7 +179,8 @@ If you know the type of curation, you could provide that to the Warp `Contract`.
 ```ts
 
 
-const curation = abc.curations.get(curationId)
+const curation =
+  abc.curations.get<CollaborativeWhitelistCurationState>(curationId)
 ```
 
 #### Query Curations by Creator
