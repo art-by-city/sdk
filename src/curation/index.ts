@@ -60,6 +60,7 @@ export interface CurationCreationOptions {
   roles?: {
     curator: []
   }
+  tags?: { name: string, value: string }[]
 }
 
 export { default as ArtByCityCurations } from './curation'

@@ -23,7 +23,7 @@ export default class AuthenticatedArtByCityCurations
     super(arweave, warp, config)
   }
 
-  private determineCurationType(
+  private determineCurationSource(
     type: CurationType
   ): { srcTxId: string, contractName: string } {
     switch (type) {
@@ -66,6 +66,16 @@ export default class AuthenticatedArtByCityCurations
     const addressWhitelist = opts.addressWhitelist || []
     const roles = opts.roles || { curator: [] }
 
+    // NB: Copy full description to curation state metadata
+    if (opts.description) {
+      base.metadata['description'] = opts.description
+    }
+
+    // NB: Copy topic to curation state metadata
+    if (opts.topic) {
+      base.metadata['topic'] = opts.topic
+    }
+
     if (type === 'ownable') {
       return base
     }
@@ -86,34 +96,32 @@ export default class AuthenticatedArtByCityCurations
   }
 
   async create(type: CurationType, opts: CurationCreationOptions) {
-    const { srcTxId, contractName } = this.determineCurationType(type)
+    const { srcTxId, contractName } = this.determineCurationSource(type)
     const initialState = this.createInitialState(type, opts)
-    const tags: Tag[] = [
+    const tags = (opts.tags || []).map<Tag>(tag => new Tag(tag.name, tag.value))
+
+    tags.push(
       new Tag('Contract-Name', contractName),
 
       // ArtByCity / ArFS Entity-Type
       new Tag('Entity-Type', 'curation'),
 
-      // ANS-110 Title & Type
-      new Tag('Title', opts.title),
-      new Tag('Type', 'curation')
-    ]
+      // ANS-110 Type
+      new Tag('Type', 'curation'),
+
+      // ANS-110 Title
+      new Tag('Title', opts.title.substring(0, 150))
+    )
 
     // ANS-110 Description
     if (opts.description) {
       // NB: Description tag has a limit of 300 chars
       tags.push(new Tag('Description', opts.description.substring(0, 300)))
-
-      // NB: Copy full description to curation state metadata
-      initialState.metadata['description'] = opts.description
     }
 
     // ANS-110 Topic
     if (opts.topic) {
       tags.push(new Tag('Topic', opts.topic))
-
-      // NB: Copy topic to curation state metadata
-      initialState.metadata['topic'] = opts.topic
     }
 
     const { contractTxId } = await this.warp.deployFromSourceTx({
