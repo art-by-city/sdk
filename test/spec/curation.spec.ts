@@ -175,5 +175,76 @@ describe('Curation Module', () => {
       expect(foundTag2?.get('value')).to.equal(myTag2.value)
       expect(foundTag3?.get('value')).to.equal(myTag3.value)
     })
+
+    it('should generate a slug tag for curations based on title', async () => {
+      const title = 'My Curation With A Slug'
+      
+      await authenticatedCurations.create('ownable', {
+        owner: MOCK_OWNER,
+        title
+      })
+
+      const { tags } = warpMock.deployFromSourceTx.firstCall.args[0]
+      const slugTag = tags?.find(tag => tag.get('name') === 'Slug')
+
+      expect(slugTag?.get('value')).to.equal('my-curation-with-a-slug')
+    })
+
+    it('should generate slugs up to 150 chars', async () => {
+      const title = ''.padEnd(175, 'a')
+
+      await authenticatedCurations.create('ownable', {
+        owner: MOCK_OWNER,
+        title
+      })
+
+      const { tags } = warpMock.deployFromSourceTx.firstCall.args[0]
+      const slugTag = tags?.find(tag => tag.get('name') === 'Slug')
+
+      expect(slugTag?.get('value')).to.equal(title.substring(0, 150))
+    })
+
+    it('should allow user to provide custom slug tag', async () => {
+      const slug = 'my-custom-slug'
+
+      await authenticatedCurations.create('ownable', {
+        owner: MOCK_OWNER,
+        title: 'My Custom Slug Curation',
+        slug
+      })
+
+      const { tags } = warpMock.deployFromSourceTx.firstCall.args[0]
+      const slugTag = tags?.find(tag => tag.get('name') === 'Slug')
+
+      expect(slugTag?.get('value')).to.equal(slug)
+    })
+
+    it('should limit custom user slugs to 150 chars', async () => {
+      const slug = 'a'.padEnd(175, 'a')
+
+      await authenticatedCurations.create('ownable', {
+        owner: MOCK_OWNER,
+        title: 'My Long Custom Slug Curation',
+        slug
+      })
+
+      const { tags } = warpMock.deployFromSourceTx.firstCall.args[0]
+      const slugTag = tags?.find(tag => tag.get('name') === 'Slug')
+
+      expect(slugTag?.get('value')).to.equal(slug.substring(0, 150))
+    })
+
+    it('should allow user to opt out of using a slug tag', async () => {
+      await authenticatedCurations.create('ownable', {
+        owner: MOCK_OWNER,
+        title: 'My Curation Without A Slug',
+        slug: false
+      })
+
+      const { tags } = warpMock.deployFromSourceTx.firstCall.args[0]
+      const slugTag = tags?.find(tag => tag.get('name') === 'Slug')
+
+      expect(slugTag).to.be.undefined
+    })
   })
 })
