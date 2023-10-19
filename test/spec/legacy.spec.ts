@@ -94,11 +94,14 @@ describe('ArtByCity Legacy Module', () => {
         preview4k: 'mock-preview4k-id',
         animated: false
       }
+
+      /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument */
       sinon.stub(legacy.transactions, 'fetchData').resolves({
         ok: true,
         data: {
           images: [image]
         },
+      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
       } as any)
 
       const manifest = await legacy.fetchPublication(manifestId)
