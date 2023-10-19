@@ -202,9 +202,9 @@ export default class ArtByCityLegacy {
         && typeof data.creator === 'object'
         && 'address' in data.creator
         && typeof data.creator.address === 'string'
-          ? data.creator?.address
-          // TODO -> possibly fallback on bundle tx.owner ?
-          : ''
+        ? data.creator?.address
+        // TODO -> possibly fallback on bundle tx.owner ?
+        : ''
 
     const title = typeof data.title === 'string'
       ? data.title
