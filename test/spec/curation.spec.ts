@@ -67,7 +67,7 @@ describe('Curation Module', () => {
         MOCK_ABC_CONFIG.contracts.curation.ownable
       )
       expect(
-        (contractData.tags || []).some(tag => {
+        contractData.tags?.some(tag => {
           return tag.get('name') === 'Contract-Name'
             && tag.get('value') === 'Ownable-Curation-Contract'
         })
@@ -87,7 +87,7 @@ describe('Curation Module', () => {
         MOCK_ABC_CONFIG.contracts.curation.whitelist
       )
       expect(
-        (contractData.tags || []).some(tag => {
+        contractData.tags?.some(tag => {
           return tag.get('name') === 'Contract-Name'
             && tag.get('value') === 'Whitelist-Curation-Contract'
         })
@@ -107,7 +107,7 @@ describe('Curation Module', () => {
         MOCK_ABC_CONFIG.contracts.curation.collaborative
       )
       expect(
-        (contractData.tags || []).some(tag => {
+        contractData.tags?.some(tag => {
           return tag.get('name') === 'Contract-Name'
             && tag.get('value') === 'Collaborative-Curation-Contract'
         })
@@ -130,7 +130,7 @@ describe('Curation Module', () => {
         MOCK_ABC_CONFIG.contracts.curation.collaborativeWhitelist
       )
       expect(
-        (contractData.tags || []).some(tag => {
+        contractData.tags?.some(tag => {
           return tag.get('name') === 'Contract-Name'
             && tag.get('value') === 'Collaborative-Whitelist-Curation-Contract'
         })
@@ -148,13 +148,32 @@ describe('Curation Module', () => {
       })
 
       const { tags } = warpMock.deployFromSourceTx.firstCall.args[0]
-      const titleTag = (tags || []).find(tag => tag.get('name') === 'Title')
-      const descTag = (tags || []).find(
-        tag => tag.get('name') === 'Description'
-      )
+      const titleTag = tags?.find(tag => tag.get('name') === 'Title')
+      const descTag = tags?.find(tag => tag.get('name') === 'Description')
 
       expect(titleTag?.get('value')).to.equal(title.substring(0, 150))
       expect(descTag?.get('value')).to.equal(description.substring(0, 300))
+    })
+
+    it('allows additional custom tags to be added to curations', async () => {
+      const myTag1 = { name: 'My-Tag-1', value: 'My First Tag' }
+      const myTag2 = { name: 'My-Tag-2', value: 'My Second Tag' }
+      const myTag3 = { name: 'My-Tag-3', value: 'My Third Tag' }
+
+      await authenticatedCurations.create('ownable', {
+        owner: MOCK_OWNER,
+        title: 'My Custom Tags Curation',
+        tags: [ myTag1, myTag2, myTag3 ]
+      })
+
+      const { tags } = warpMock.deployFromSourceTx.firstCall.args[0]
+      const foundTag1 = tags?.find(tag => tag.get('name') === myTag1.name)
+      const foundTag2 = tags?.find(tag => tag.get('name') === myTag2.name)
+      const foundTag3 = tags?.find(tag => tag.get('name') === myTag3.name)
+
+      expect(foundTag1?.get('value')).to.equal(myTag1.value)
+      expect(foundTag2?.get('value')).to.equal(myTag2.value)
+      expect(foundTag3?.get('value')).to.equal(myTag3.value)
     })
   })
 })
