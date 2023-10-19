@@ -3,6 +3,6 @@ export function generateSlug(from: string, limit?: number) {
     .toLowerCase()
     .trim()
     .replace(/[\s]/g, '-')
-    .replace(/[^a-z0-9_\-\.]/g, '')
+    .replace(/[^a-z0-9_\-.]/g, '')
     .substring(0, limit)
 }
