@@ -61,6 +61,7 @@ export interface CurationCreationOptions {
     curator: []
   }
   tags?: { name: string, value: string }[]
+  slug?: boolean | string
 }
 
 export { default as ArtByCityCurations } from './curation'

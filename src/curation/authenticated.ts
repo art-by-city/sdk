@@ -10,6 +10,7 @@ import {
   CurationType,
   UnknownCurationTypeError,
 } from './'
+import { generateSlug } from '../util'
 
 export default class AuthenticatedArtByCityCurations
   extends ArtByCityCurations
@@ -122,6 +123,13 @@ export default class AuthenticatedArtByCityCurations
     // ANS-110 Topic
     if (opts.topic) {
       tags.push(new Tag('Topic', opts.topic))
+    }
+
+    // Slug
+    if (typeof opts.slug === 'undefined' || opts.slug === true) {
+      tags.push(new Tag('Slug', generateSlug(opts.title, 150)))
+    } else if (typeof opts.slug === 'string') {
+      tags.push(new Tag('Slug', generateSlug(opts.slug, 150)))
     }
 
     const { contractTxId } = await this.warp.deployFromSourceTx({
