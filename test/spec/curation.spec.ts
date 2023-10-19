@@ -2,14 +2,13 @@ import 'mocha'
 import { expect } from 'chai'
 import sinon from 'sinon'
 import Arweave from 'arweave'
-import { FromSrcTxContractData, Tag, Warp } from 'warp-contracts'
+import { Warp } from 'warp-contracts'
 
 import { AuthenticatedArtByCityCurations } from '../../src/curation'
 import { ArtByCityConfig } from '../../src'
 
 const MOCK_OWNER = '0x-mock-owner'
 const MOCK_CONTRACT_TX_ID = 'mock-contract-tx-id'
-const MOCK_CONTRACT_SRC_TX_ID = 'mock-contract-tx-src-id'
 const MOCK_ABC_CONFIG: ArtByCityConfig = {
   environment: 'development',
   contracts: {
