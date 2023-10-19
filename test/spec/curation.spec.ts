@@ -26,8 +26,8 @@ const MOCK_ABC_CONFIG: ArtByCityConfig = {
   }
 }
 
-const warpMock = sinon.createStubInstance(Warp)
 const arweaveMock = sinon.createStubInstance(Arweave)
+const warpMock = sinon.createStubInstance(Warp)
 let authenticatedCurations: AuthenticatedArtByCityCurations
 
 describe('Curation Module', () => {

@@ -19,7 +19,7 @@ import {
 } from './'
 
 export default class ArtByCityLegacy {
-  private readonly transactions!: LegacyTransactions
+  public readonly transactions!: LegacyTransactions
   public readonly usernames!: LegacyUsernames
   private readonly gatewayRoot!: string
   private readonly cacheEnabled!: boolean
@@ -236,7 +236,8 @@ export default class ArtByCityLegacy {
       creator,
       title,
       slug,
-      images
+      images,
+      image: images[0]
     }
 
     if (typeof data.description === 'string') {

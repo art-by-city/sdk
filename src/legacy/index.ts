@@ -53,6 +53,7 @@ export interface LegacyPublicationManifest
   medium?: string
   genre?: string
   city?: string
+  image: LegacyPublicationManifestImage
   images: LegacyPublicationManifestImage[]
   audio?: string
   model?: string
