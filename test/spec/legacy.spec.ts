@@ -108,5 +108,51 @@ describe('ArtByCity Legacy Module', () => {
 
       expect(manifest.image).to.deep.equal(image)
     })
+
+    it('Handles legacy manifests with creator string', async () => {
+      const legacy = new ArtByCityLegacy(
+        arweaveMock,
+        warpMock,
+        MOCK_ABC_CONFIG
+      )
+      const manifestId = 'mock-manifest-id'
+      const address = 'mock-creator-address'
+
+      /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument */
+      sinon.stub(legacy.transactions, 'fetchData').resolves({
+        ok: true,
+        data: {
+          creator: address
+        },
+      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+      } as any)
+
+      const manifest = await legacy.fetchPublication(manifestId)
+
+      expect(manifest.creator).to.equal(address)
+    })
+
+    it('Handles legacy manifests with creator object', async () => {
+      const legacy = new ArtByCityLegacy(
+        arweaveMock,
+        warpMock,
+        MOCK_ABC_CONFIG
+      )
+      const manifestId = 'mock-manifest-id'
+      const address = 'mock-creator-address'
+
+      /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument */
+      sinon.stub(legacy.transactions, 'fetchData').resolves({
+        ok: true,
+        data: {
+          creator: { address }
+        },
+      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+      } as any)
+
+      const manifest = await legacy.fetchPublication(manifestId)
+
+      expect(manifest.creator).to.equal(address)
+    })
   })
 })
