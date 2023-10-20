@@ -220,14 +220,21 @@ export default class ArtByCityLegacy {
         : []
     const images = dataImages.map(di => {
       if (di && typeof di === 'object' && !Array.isArray(di)) {
-        const image = {
-          image: typeof di.image === 'string' ? di.image : '',
-          preview: typeof di.preview === 'string' ? di.preview : '',
-          preview4k: typeof di.preview4k === 'string' ? di.preview4k : '',
-          animated: typeof di.animated === 'boolean' ? di.animated : false
+        if (typeof di.dataUrl === 'string') {
+          return {
+            image: di.dataUrl,
+            preview: di.dataUrl,
+            preview4k: di.dataUrl,
+            animated: di.imageType === 'image/gif'
+          }
+        } else {
+          return {
+            image: typeof di.image === 'string' ? di.image : '',
+            preview: typeof di.preview === 'string' ? di.preview : '',
+            preview4k: typeof di.preview4k === 'string' ? di.preview4k : '',
+            animated: typeof di.animated === 'boolean' ? di.animated : false
+          }
         }
-
-        return image
       }
 
       return { image: '', preview: '', preview4k: '' }

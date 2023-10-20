@@ -38,7 +38,7 @@ const localApiConfig = {
   port: 1984
 }
 
-describe('ArtByCity Legacy Module', () => {
+describe('Legacy Module', () => {
   beforeEach(() => {
     arweaveMock.api = {
       getConfig: sinon.stub().returns(localApiConfig) as unknown
@@ -157,6 +157,31 @@ describe('ArtByCity Legacy Module', () => {
       const manifest = await legacy.fetchPublication(manifestId)
 
       expect(manifest.creator).to.equal(address)
+    })
+
+    it('Populates images for ancient legacy dataUrl publications', async () => {
+      const legacy = new ArtByCityLegacy(
+        arweaveMock,
+        warpMock,
+        MOCK_ABC_CONFIG
+      )
+      const manifestId = 'mock-manifest-id'
+
+      /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument */
+      sinon.stub(legacy.transactions, 'fetchData').resolves({
+        ok: true,
+        data: {
+          images: [{
+            dataUrl: 'data-url',
+            imageType: 'image/jpeg'
+          }]
+        },
+      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+      } as any)
+
+      const manifest = await legacy.fetchPublication(manifestId)
+
+      expect(manifest.images)
     })
   })
 
