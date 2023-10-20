@@ -17,6 +17,7 @@ import {
   LegacyTipsFeed,
   LegacyAvatar
 } from './'
+import { InvalidAddressError, isValidAddress } from '../util/crypto'
 
 export default class ArtByCityLegacy {
   public readonly transactions!: LegacyTransactions
@@ -331,6 +332,10 @@ export default class ArtByCityLegacy {
     address: string,
     useCache: boolean = true
   ): Promise<LegacyProfile | null> {
+    if (!isValidAddress(address)) {
+      throw new InvalidAddressError()
+    }
+
     if (this.cacheEnabled && useCache) {
       const cached = this.caches.profiles.get(address)
       if (cached) { return cached }
