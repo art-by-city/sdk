@@ -1,5 +1,6 @@
 import 'mocha'
-import { expect } from 'chai'
+import chai, { expect } from 'chai'
+import chaiAsPromised from 'chai-as-promised'
 import sinon from 'sinon'
 import Arweave from 'arweave'
 import { Warp } from 'warp-contracts'
@@ -8,6 +9,9 @@ import Api from 'arweave/node/lib/api'
 import ArtByCityLegacy from '../../src/legacy'
 import { ArtByCityConfig } from '../../src'
 import VerifiedCreators from '../../src/legacy/verified-creators.json'
+import { InvalidAddressError } from '../../src/util/crypto'
+
+chai.use(chaiAsPromised)
 
 const MOCK_ABC_CONFIG: ArtByCityConfig = {
   environment: 'development',
@@ -80,7 +84,7 @@ describe('ArtByCity Legacy Module', () => {
     })
   })
 
-  context.only('Fetching Publications', () => {
+  context('Fetching Publications', () => {
     it('Populates manifest .image with first from .images', async () => {
       const legacy = new ArtByCityLegacy(
         arweaveMock,
@@ -153,6 +157,38 @@ describe('ArtByCity Legacy Module', () => {
       const manifest = await legacy.fetchPublication(manifestId)
 
       expect(manifest.creator).to.equal(address)
+    })
+  })
+
+  context('Profiles', () => {
+    it('Throws when fetching profile for invalid address', () => {
+      const legacy = new ArtByCityLegacy(
+        arweaveMock,
+        warpMock,
+        MOCK_ABC_CONFIG
+      )
+
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      expect(legacy.fetchProfile('')).to.be.rejectedWith(
+        InvalidAddressError,
+        'Invalid address'
+      )
+    })
+  })
+
+  context('Avatars', () => {
+    it('Throws when fetching avatar for invalid address', () => {
+      const legacy = new ArtByCityLegacy(
+        arweaveMock,
+        warpMock,
+        MOCK_ABC_CONFIG
+      )
+
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      expect(legacy.fetchAvatar('')).to.be.rejectedWith(
+        InvalidAddressError,
+        'Invalid address'
+      )
     })
   })
 })
