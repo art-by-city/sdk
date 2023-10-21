@@ -9,7 +9,10 @@
     <script src="../../node_modules/mocha/mocha.js"></script>
     <link ref="stylesheet" href="../../node_modules/mocha/mocha.css" />
     <script>
-      mocha.setup('bdd')
+      mocha.setup({
+        ui: 'bdd',
+        timeout: '0'
+      })
     </script>
     <script src="../../bundles/webtests.bundle.js"></script>
   </head>

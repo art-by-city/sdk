@@ -3,6 +3,7 @@ import { expect } from 'chai'
 import sinon from 'sinon'
 import Arweave from 'arweave'
 import { Warp } from 'warp-contracts'
+import { ArweaveSigner } from 'warp-arbundles'
 
 import { AuthenticatedArtByCityCurations } from '../../src/curation'
 import { ArtByCityConfig } from '../../src'
@@ -26,6 +27,7 @@ const MOCK_ABC_CONFIG: ArtByCityConfig = {
   }
 }
 
+const signerMock = sinon.createStubInstance(ArweaveSigner)
 const arweaveMock = sinon.createStubInstance(Arweave)
 const warpMock = sinon.createStubInstance(Warp)
 let authenticatedCurations: AuthenticatedArtByCityCurations
@@ -36,7 +38,7 @@ describe('Curation Module', () => {
       arweaveMock,
       warpMock,
       MOCK_ABC_CONFIG,
-      'use_wallet'
+      signerMock
     )
     warpMock.deployFromSourceTx.resolves({
       contractTxId: MOCK_CONTRACT_TX_ID

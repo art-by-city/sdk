@@ -1,7 +1,11 @@
 import Arweave from 'arweave'
-import { Tag, Warp } from 'warp-contracts'
+import { JWKInterface, Tag, Warp } from 'warp-contracts'
+import { ArweaveSigner } from 'warp-arbundles'
+import {
+  InjectedArweaveSigner,
+  isSigner
+} from 'warp-contracts-plugin-deploy'
 
-import { JWKInterface } from '../util/types'
 import { ArtByCityConfig } from '../config'
 import {
   ArtByCityCurations,
@@ -19,7 +23,10 @@ export default class AuthenticatedArtByCityCurations
     arweave: Arweave,
     protected warp: Warp,
     config: ArtByCityConfig,
-    private readonly wallet: JWKInterface | 'use_wallet'
+    private readonly signer:
+      | ArweaveSigner
+      | InjectedArweaveSigner
+      | JWKInterface
   ) {
     super(arweave, warp, config)
   }
@@ -132,12 +139,20 @@ export default class AuthenticatedArtByCityCurations
       tags.push(new Tag('Slug', generateSlug(opts.slug, 150)))
     }
 
+    console.log('signer instanceof ArweaveSigner', this.signer instanceof ArweaveSigner)
+    console.log('signer instanceof InjectedArweaveSigner', this.signer instanceof InjectedArweaveSigner)
+    console.log('warp interactionsloader type', this.warp.interactionsLoader.type())
+    /* @ts-expect-error warp types are spaghetti */
+    const disableBundling = !isSigner(this.signer)
+    console.log('disable bundling?', disableBundling)
     const { contractTxId } = await this.warp.deployFromSourceTx({
-      wallet: this.wallet,
+      /* @ts-expect-error warp types are spaghetti */
+      wallet: this.signer,
       srcTxId,
       initState: JSON.stringify(initialState),
       tags
-    })
+      
+    }, disableBundling)
 
     return contractTxId
   }
