@@ -1,7 +1,11 @@
 import Arweave from 'arweave'
-import { Tag, Warp } from 'warp-contracts'
+import { JWKInterface, Tag, Warp } from 'warp-contracts'
+import { ArweaveSigner } from 'warp-arbundles'
+import {
+  InjectedArweaveSigner,
+  isSigner
+} from 'warp-contracts-plugin-deploy'
 
-import { JWKInterface } from '../util/types'
 import { ArtByCityConfig } from '../config'
 import {
   ArtByCityCurations,
@@ -19,7 +23,10 @@ export default class AuthenticatedArtByCityCurations
     arweave: Arweave,
     protected warp: Warp,
     config: ArtByCityConfig,
-    private readonly wallet: JWKInterface | 'use_wallet'
+    private readonly signer:
+      | ArweaveSigner
+      | InjectedArweaveSigner
+      | JWKInterface
   ) {
     super(arweave, warp, config)
   }
@@ -133,11 +140,13 @@ export default class AuthenticatedArtByCityCurations
     }
 
     const { contractTxId } = await this.warp.deployFromSourceTx({
-      wallet: this.wallet,
+      /* @ts-expect-error warp types are spaghetti */
+      wallet: this.signer,
       srcTxId,
       initState: JSON.stringify(initialState),
       tags
-    })
+    /* @ts-expect-error warp types are spaghetti */  
+    }, !isSigner(this.signer))
 
     return contractTxId
   }

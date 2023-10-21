@@ -1,10 +1,14 @@
 import 'mocha'
 import { expect } from 'chai'
 import Arweave from 'arweave'
+import { ArweaveSigner } from 'warp-arbundles'
+import {
+  InjectedArweaveSigner
+} from 'warp-contracts-plugin-deploy'
 
+import TestweaveJWK from '../testweave-keyfile.json'
 import ArtByCity, { ArtByCityEnvironment } from '../../src'
 import ArtByCityLegacy from '../../src/legacy'
-import { JWKInterface } from '../../src/util/types'
 
 describe('ArtByCity SDK', () => {
   it('Constructs with default Arweave instance', () => {
@@ -49,17 +53,16 @@ describe('ArtByCity SDK', () => {
 
       const abc = new ArtByCity().connect()
 
-      expect(abc.wallet).to.equal('use_wallet')
+      expect(abc.signer).to.to.be.an.instanceOf(InjectedArweaveSigner)
 
       // @ts-expect-error un-setting mock
       global.window = undefined
     })
 
     it('from a wallet keyfile', () => {
-      const jwk = { mock: 'keyfile' } as unknown as JWKInterface
-      const abc = new ArtByCity().connect(jwk)
+      const abc = new ArtByCity().connect(TestweaveJWK)
 
-      expect(abc.wallet).to.equal(jwk)
+      expect(abc.signer).to.to.be.an.instanceOf(ArweaveSigner)
     })
 
     it('but throws when wallet provider unavailable', () => {
