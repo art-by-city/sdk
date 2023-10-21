@@ -139,20 +139,14 @@ export default class AuthenticatedArtByCityCurations
       tags.push(new Tag('Slug', generateSlug(opts.slug, 150)))
     }
 
-    console.log('signer instanceof ArweaveSigner', this.signer instanceof ArweaveSigner)
-    console.log('signer instanceof InjectedArweaveSigner', this.signer instanceof InjectedArweaveSigner)
-    console.log('warp interactionsloader type', this.warp.interactionsLoader.type())
-    /* @ts-expect-error warp types are spaghetti */
-    const disableBundling = !isSigner(this.signer)
-    console.log('disable bundling?', disableBundling)
     const { contractTxId } = await this.warp.deployFromSourceTx({
       /* @ts-expect-error warp types are spaghetti */
       wallet: this.signer,
       srcTxId,
       initState: JSON.stringify(initialState),
       tags
-      
-    }, disableBundling)
+    /* @ts-expect-error warp types are spaghetti */  
+    }, !isSigner(this.signer))
 
     return contractTxId
   }

@@ -1,10 +1,7 @@
 import Arweave from 'arweave'
-import { Warp, WarpFactory } from 'warp-contracts'
+import { Warp, } from 'warp-contracts'
 import { ArweaveSigner } from 'warp-arbundles'
-import {
-  DeployPlugin,
-  InjectedArweaveSigner
-} from 'warp-contracts-plugin-deploy'
+import { InjectedArweaveSigner } from 'warp-contracts-plugin-deploy'
 
 import { JWKInterface } from '../util/types'
 import { ArtByCityConfig } from '../config'
@@ -26,7 +23,6 @@ export default class AuthenticatedArtByCityClient extends BaseArtByCityClient {
   ) {
     super(arweave, config)
 
-    let disableWarpBundling = false
     if (typeof window !== 'undefined') {
       if (!jwk) {
         if (typeof window.arweaveWallet === 'undefined') {
@@ -35,26 +31,17 @@ export default class AuthenticatedArtByCityClient extends BaseArtByCityClient {
           )
         }
         this.signer = new InjectedArweaveSigner(window.arweaveWallet)
-        console.log('AUTH CREATED NODE ARWEAVESIGNER')
       } else {
         this.signer = jwk
-        disableWarpBundling = true
-        console.log('AUTH USING JWK', jwk)
       }
     } else {
       if (!jwk) { throw new Error('jwk required for connect() in node env') }
       this.signer = new ArweaveSigner(jwk)
-      console.log('AUTH CREATED NODE ARWEAVESIGNER')
     }
 
     this.curations = new AuthenticatedArtByCityCurations(
       this.arweave,
-      disableWarpBundling
-        ? WarpFactory.forMainnet({
-            inMemory: true,
-            dbLocation: '.art-by-city'
-          }, true).use(new DeployPlugin())
-        : this.warp,
+      this.warp,
       this.config,
       this.signer
     )

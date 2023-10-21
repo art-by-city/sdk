@@ -9,7 +9,6 @@ import {
 import TestweaveJWK from '../testweave-keyfile.json'
 import ArtByCity, { ArtByCityEnvironment } from '../../src'
 import ArtByCityLegacy from '../../src/legacy'
-import { JWKInterface } from '../../src/util/types'
 
 describe('ArtByCity SDK', () => {
   it('Constructs with default Arweave instance', () => {

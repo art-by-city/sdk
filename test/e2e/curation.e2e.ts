@@ -1,3 +1,4 @@
+/* eslint-disable */
 import('mocha') // NB: this style import makes both webpack and typescript happy
 import { expect } from 'chai'
 import Arweave from 'arweave'
@@ -120,3 +121,4 @@ describe('Curation Module', () => {
   //   })
   // })
 })
+/* eslint-enable */
