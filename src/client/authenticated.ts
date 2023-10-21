@@ -1,5 +1,5 @@
 import Arweave from 'arweave'
-import { Warp, } from 'warp-contracts'
+import { Warp } from 'warp-contracts'
 import { ArweaveSigner } from 'warp-arbundles'
 import { InjectedArweaveSigner } from 'warp-contracts-plugin-deploy'
 
