@@ -25,10 +25,21 @@ export default class ArtByCityCurations {
   }
 
   async getTransaction(curationId: string): Promise<ArdbTransaction | null> {
+    console.log('curationId', curationId)
+
+    // const tx = await this.ardb
+    //   .search('transaction')
+    //   .id(curationId)
+    //   .sort('HEIGHT_DESC')
+    //   .findOne() as ArdbTransaction
+
+    // return tx
+    
     const txs = await this.ardb
       .search('transactions')
-      .id(curationId)
-      .findAll() as ArdbTransaction[]
+      .ids([curationId])
+      .sort('HEIGHT_DESC')
+      .find() as ArdbTransaction[]
 
     return txs[0] || null
   }

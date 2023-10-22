@@ -2,20 +2,19 @@
 import('mocha') // NB: this style import makes both webpack and typescript happy
 import { expect } from 'chai'
 import Arweave from 'arweave'
-import { JWKInterface, LoggerFactory, WarpFactory } from 'warp-contracts'
+import { JWKInterface } from 'warp-contracts'
 
 import TestweaveJWK from '../testweave-keyfile.json'
 import ArtByCity, { ArtByCityConfig } from '../../src'
 
-LoggerFactory.INST.logLevel('error')
 /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
-const jwk: JWKInterface = TestweaveJWK as JWKInterface
+const jwk: JWKInterface = TestweaveJWK
+
 // const arweave = Arweave.init({
 //   protocol: 'http',
 //   host: 'localhost',
 //   port: 1984
 // })
-// const warp = WarpFactory.forLocal()
 // const config: Partial<ArtByCityConfig> = {
 //   environment: 'development',
 //   contracts: {
@@ -32,10 +31,6 @@ const arweave = Arweave.init({
   protocol: 'https',
   host: 'arweave.net',
   port: 443
-})
-const warp = WarpFactory.forMainnet({
-  inMemory: true,
-  dbLocation: '.art-by-city'
 })
 const config: Partial<ArtByCityConfig> = { environment: 'production' }
 
@@ -117,7 +112,9 @@ describe('Curation Module', () => {
     it.only('fetches curation transaction by id', async () => {
       const abc = new ArtByCity(arweave, config)
 
-      const tx = await abc.curations.getTransaction('eES4WS8QtO2mMprsEajd2q9eTsV_cRTh6wrjkVh5cIY')
+      const tx = await abc
+        .curations
+        .getTransaction('N_nbvz1vWrNI1kl0Nxefgi3Zo0p9F-onoF1mafWaKUU')
 
       expect(tx).to.not.be.null
     })
