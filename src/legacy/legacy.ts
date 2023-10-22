@@ -4,7 +4,7 @@ import { Warp } from 'warp-contracts'
 import { ArtByCityConfig } from '../config'
 import VerifiedCreators from './verified-creators.json'
 import LegacyTransactions from './transactions'
-import LegacyUsernames from './usernames'
+import ArtByCityUsernames from '../usernames/usernames'
 import LegacyMemcache from './memcache'
 import {
   LegacyProfile,
@@ -21,7 +21,6 @@ import { InvalidAddressError, isValidAddress } from '../util/crypto'
 
 export default class ArtByCityLegacy {
   public readonly transactions!: LegacyTransactions
-  public readonly usernames!: LegacyUsernames
   private readonly gatewayRoot!: string
   private readonly cacheEnabled!: boolean
   public readonly caches: {
@@ -46,10 +45,6 @@ export default class ArtByCityLegacy {
     private readonly config: ArtByCityConfig
   ) {
     this.transactions = new LegacyTransactions(arweave, config.environment)
-    this.usernames = new LegacyUsernames(
-      warp,
-      config.contracts.usernames
-    )
     this.cacheEnabled = config.cache.type === 'memcache'
     const { protocol, host, port } = arweave.api.getConfig()
     this.gatewayRoot = `${protocol}://${host}:${port}`

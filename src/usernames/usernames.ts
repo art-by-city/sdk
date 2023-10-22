@@ -6,7 +6,7 @@ export interface UsernamesContractState {
   }
 }
 
-export default class LegacyUsernames
+export default class ArtByCityUsernames
   extends BaseContractProvider<UsernamesContractState>
 {
   async resolve(
