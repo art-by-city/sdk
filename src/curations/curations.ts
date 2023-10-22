@@ -24,6 +24,15 @@ export default class ArtByCityCurations {
     return new Curation(this.warp, curationId)
   }
 
+  async getTransaction(curationId: string): Promise<ArdbTransaction | null> {
+    const txs = await this.ardb
+      .search('transactions')
+      .id(curationId)
+      .findAll() as ArdbTransaction[]
+
+    return txs[0] || null
+  }
+
   async createdBy(creator: string, cursor?: string) {
     let query = this.ardb
       .search('transactions')
