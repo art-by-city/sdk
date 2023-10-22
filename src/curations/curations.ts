@@ -1,10 +1,11 @@
 import ArDB from 'ardb'
 import Arweave from 'arweave'
-import { Contract, Warp } from 'warp-contracts'
+import { Warp } from 'warp-contracts'
 
 import { ArtByCityConfig } from '../config'
-import { CurationContractStates } from './'
+import { CurationContractStates } from '.'
 import ArdbTransaction from 'ardb/lib/models/transaction'
+import Curation from './curation'
 
 export default class ArtByCityCurations {
   protected readonly ardb!: ArDB
@@ -19,8 +20,8 @@ export default class ArtByCityCurations {
 
   get<State extends CurationContractStates>(
     curationId: string
-  ): Contract<State> {
-    return this.warp.contract<State>(curationId)
+  ): Curation<State> {
+    return new Curation(this.warp, curationId)
   }
 
   async createdBy(creator: string, cursor?: string) {

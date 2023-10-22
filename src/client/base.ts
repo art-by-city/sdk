@@ -8,7 +8,7 @@ import {
   ArtByCityConfig,
   DEFAULT_ARTBYCITY_CONFIG
 } from '../config'
-import { ArtByCityCurations } from '../curation'
+import { ArtByCityCurations } from '../curations'
 import { ArtByCityUsernames } from '../usernames'
 
 export default class ArtByCity {

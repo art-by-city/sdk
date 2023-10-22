@@ -5,7 +5,7 @@ import { InjectedArweaveSigner } from 'warp-contracts-plugin-deploy'
 
 import { JWKInterface } from '../util/types'
 import { ArtByCityConfig } from '../config'
-import { AuthenticatedArtByCityCurations } from '../curation'
+import { AuthenticatedArtByCityCurations } from '../curations'
 import BaseArtByCityClient from './base'
 
 export default class AuthenticatedArtByCityClient extends BaseArtByCityClient {

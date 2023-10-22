@@ -64,5 +64,5 @@ export interface CurationCreationOptions {
   slug?: boolean | string
 }
 
-export { default as ArtByCityCurations } from './curation'
+export { default as ArtByCityCurations } from './curations'
 export { default as AuthenticatedArtByCityCurations } from './authenticated'

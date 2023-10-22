@@ -6,7 +6,7 @@ import { JWKInterface, LoggerFactory, WarpFactory } from 'warp-contracts'
 
 import TestweaveJWK from '../testweave-keyfile.json'
 import ArtByCity, { ArtByCityConfig } from '../../src'
-import { CurationContractStates } from '../../src/curation'
+// import { CurationContractStates } from '../../src/curations'
 
 LoggerFactory.INST.logLevel('error')
 /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
@@ -99,26 +99,26 @@ describe('Curation Module', () => {
     it('creates collaborative curation contracts')
     it('creates collaborative whitelist curation contracts')
   })
-  // context('Unauthenticated', () => {
-  //   it('fetches curation contracts by id', async () => {
-  //     const address = await arweave.wallets.jwkToAddress(jwk)
-  //     const abc = new ArtByCity(arweave, config)
+  context('Unauthenticated', () => {
+    // it('fetches curation contracts by id', async () => {
+    //   const address = await arweave.wallets.jwkToAddress(jwk)
+    //   const abc = new ArtByCity(arweave, config)
 
-  //     const curation = abc.curations.get(ownableCurationContractId)
-  //     const { cachedValue: { state } } = await curation.readState()
+    //   const curation = abc.curations.get(ownableCurationContractId)
+    //   const { cachedValue: { state } } = await curation.contract.readState()
       
-  //     expect(state).to.be.an('object').with.property('owner')
-  //     expect(state.owner).to.be.a('string').that.equals(address)
-  //   })
+    //   expect(state).to.be.an('object').with.property('owner')
+    //   expect(state.owner).to.be.a('string').that.equals(address)
+    // })
 
-  //   it('queries curations by creator', async () => {
-  //     const address = await arweave.wallets.jwkToAddress(jwk)
-  //     const abc = new ArtByCity(arweave, config)
+    // it('queries curations by creator', async () => {
+    //   const address = await arweave.wallets.jwkToAddress(jwk)
+    //   const abc = new ArtByCity(arweave, config)
 
-  //     const { curations } = await abc.curations.createdBy(address)
+    //   const { curations } = await abc.curations.createdBy(address)
 
-  //     expect(curations).to.be.an('array').that.is.not.empty
-  //   })
-  // })
+    //   expect(curations).to.be.an('array').that.is.not.empty
+    // })
+  })
 })
 /* eslint-enable */

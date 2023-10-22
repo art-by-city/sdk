@@ -5,7 +5,7 @@ import Arweave from 'arweave'
 import { Warp } from 'warp-contracts'
 import { ArweaveSigner } from 'warp-arbundles'
 
-import { AuthenticatedArtByCityCurations } from '../../src/curation'
+import { AuthenticatedArtByCityCurations } from '../../src/curations'
 import { ArtByCityConfig } from '../../src'
 
 const MOCK_OWNER = '0x-mock-owner'
