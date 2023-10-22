@@ -49,3 +49,15 @@ export interface ARFSFileMetadata {
   */
   pinnedDataOwner: string
 }
+
+export type WithRequired<
+  T,
+  K extends keyof T
+> = T & { [P in K]-?: NonNullable<T[P]> }
+
+export function assertHasValueForKey<T, K extends keyof T>(
+  obj: T,
+  key: K
+): asserts obj is WithRequired<T, K> {
+  if (obj[key] == null) { throw new Error(`${String(key)} is required`) }
+}
