@@ -1,7 +1,6 @@
 import('mocha') // NB: this style import makes both webpack and typescript happy
 import chai, { expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import * as sinon from 'sinon'
 import sinonChai from 'sinon-chai'
 import Arweave from 'arweave'
 

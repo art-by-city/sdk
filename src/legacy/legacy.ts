@@ -4,7 +4,6 @@ import { Warp } from 'warp-contracts'
 import { ArtByCityConfig } from '../config'
 import VerifiedCreators from './verified-creators.json'
 import LegacyTransactions from './transactions'
-import ArtByCityUsernames from '../usernames/usernames'
 import LegacyMemcache from './memcache'
 import {
   LegacyProfile,
