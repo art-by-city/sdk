@@ -661,7 +661,7 @@ describe(`ArtByCity (web)`, () => {
       it('resolves usernames from address', async () => {
         const abc = new ArtByCity(arweave)
 
-        const username = await abc.legacy
+        const username = await abc
           .usernames
           .resolveUsernameFromAddress(JIM_ADDRESS)
         
@@ -671,7 +671,7 @@ describe(`ArtByCity (web)`, () => {
       it('resolves address from username', async () => {
         const abc = new ArtByCity(arweave)
 
-        const address = await abc.legacy
+        const address = await abc
           .usernames
           .resolveAddressFromUsername('jim')
         
@@ -681,8 +681,8 @@ describe(`ArtByCity (web)`, () => {
       it('resolves username or address', async () => {
         const abc = new ArtByCity(arweave)
 
-        const { username } = await abc.legacy.usernames.resolve(JIM_ADDRESS)
-        const { address } = await abc.legacy.usernames.resolve('jim')
+        const { username } = await abc.usernames.resolve(JIM_ADDRESS)
+        const { address } = await abc.usernames.resolve('jim')
 
         expect(username).to.equal('jim')
         expect(address).to.equal(JIM_ADDRESS)
@@ -691,7 +691,7 @@ describe(`ArtByCity (web)`, () => {
       it('null when username does not resolve from address', async () => {
         const abc = new ArtByCity(arweave)
 
-        const username = await abc.legacy
+        const username = await abc
           .usernames
           .resolveUsernameFromAddress('invalid-address')
 
@@ -701,7 +701,7 @@ describe(`ArtByCity (web)`, () => {
       it('null when address does not resolve from username', async () => {
         const abc = new ArtByCity(arweave)
 
-        const address = await abc.legacy
+        const address = await abc
           .usernames
           .resolveAddressFromUsername('890782399999333999999999*(*(&9999999999')
 
@@ -722,7 +722,7 @@ describe(`ArtByCity (web)`, () => {
         })
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        expect(abc.legacy.usernames.resolve(JIM_ADDRESS))
+        expect(abc.usernames.resolve(JIM_ADDRESS))
           .to.be.rejectedWith(Error)
       })
     })

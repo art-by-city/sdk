@@ -9,6 +9,7 @@ import {
   DEFAULT_ARTBYCITY_CONFIG
 } from '../config'
 import { ArtByCityCurations } from '../curation'
+import { ArtByCityUsernames } from '../usernames'
 
 export default class ArtByCity {
   public readonly arweave!: Arweave
@@ -16,6 +17,7 @@ export default class ArtByCity {
   public readonly legacy!: ArtByCityLegacy
   public readonly config!: ArtByCityConfig
   public readonly curations!: ArtByCityCurations
+  public readonly usernames!: ArtByCityUsernames
 
   constructor(arweave?: Arweave, config?: Partial<ArtByCityConfig>) {
     const environment = config?.environment || 'production'
@@ -38,6 +40,10 @@ export default class ArtByCity {
       this.arweave,
       this.warp,
       this.config
+    )
+    this.usernames = new ArtByCityUsernames(
+      this.warp,
+      this.config.contracts.usernames
     )
   }
 }
