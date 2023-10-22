@@ -33,27 +33,31 @@ export default class AuthenticatedArtByCityCurations
 
   private determineCurationSource(
     type: CurationType
-  ): { srcTxId: string, contractName: string } {
+  ): { srcTxId: string, contractName: string, contractVersion: string } {
     switch (type) {
       case 'ownable':
         return {
           srcTxId: this.config.contracts.curation.ownable,
-          contractName: 'Ownable-Curation-Contract'
+          contractName: 'Ownable-Curation-Contract',
+          contractVersion: '0.0.1'
         }
       case 'whitelist':
         return {
           srcTxId: this.config.contracts.curation.whitelist,
-          contractName: 'Whitelist-Curation-Contract'
+          contractName: 'Whitelist-Curation-Contract',
+          contractVersion: '0.0.1'
         }
       case 'collaborative':
         return {
           srcTxId: this.config.contracts.curation.collaborative,
-          contractName: 'Collaborative-Curation-Contract'
+          contractName: 'Collaborative-Curation-Contract',
+          contractVersion: '0.0.1'
         }
       case 'collaborative-whitelist':
         return {
           srcTxId: this.config.contracts.curation.collaborativeWhitelist,
-          contractName: 'Collaborative-Whitelist-Curation-Contract'
+          contractName: 'Collaborative-Whitelist-Curation-Contract',
+          contractVersion: '0.0.1'
         }
       default:
         throw new UnknownCurationTypeError()
@@ -104,12 +108,18 @@ export default class AuthenticatedArtByCityCurations
   }
 
   async create(type: CurationType, opts: CurationCreationOptions) {
-    const { srcTxId, contractName } = this.determineCurationSource(type)
+    const {
+      srcTxId,
+      contractName,
+      contractVersion
+    } = this.determineCurationSource(type)
     const initialState = this.createInitialState(type, opts)
     const tags = (opts.tags || []).map<Tag>(tag => new Tag(tag.name, tag.value))
 
     tags.push(
+      new Tag('Protocol', 'ArtByCity'),
       new Tag('Contract-Name', contractName),
+      new Tag('Contract-Version', contractVersion),
 
       // ArtByCity / ArFS Entity-Type
       new Tag('Entity-Type', 'curation'),

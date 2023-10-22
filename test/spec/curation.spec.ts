@@ -248,5 +248,31 @@ describe('Curation Module', () => {
 
       expect(slugTag).to.be.undefined
     })
+
+    it('adds Protocol: ArtByCity tag to curations', async () => {
+      await authenticatedCurations.create('ownable', {
+        owner: MOCK_OWNER,
+        title: 'My Art By City Tagged Curation'
+      })
+
+      const { tags } = warpMock.deployFromSourceTx.firstCall.args[0]
+      const protocolTag = tags?.find(tag => tag.get('name') === 'Protocol')
+
+      expect(protocolTag?.get('value')).to.equal('ArtByCity')
+    })
+
+    it('adds Contract-Version tag to curations', async () => {
+      await authenticatedCurations.create('ownable', {
+        owner: MOCK_OWNER,
+        title: 'My Art By City Tagged Curation'
+      })
+
+      const { tags } = warpMock.deployFromSourceTx.firstCall.args[0]
+      const contractVersionTag = tags?.find(
+        tag => tag.get('name') === 'Contract-Version'
+      )
+
+      expect(contractVersionTag?.get('value')).to.equal('0.0.1')
+    })
   })
 })
