@@ -5,8 +5,14 @@ import Arweave from 'arweave'
 import { Warp } from 'warp-contracts'
 import { ArweaveSigner } from 'warp-arbundles'
 
-import { AuthenticatedArtByCityCurations } from '../../src/curations'
+import {
+  AuthenticatedArtByCityCurations,
+  CurationContractStates
+} from '../../src/curations'
 import { ArtByCityConfig } from '../../src'
+
+import TestweaveJWK from '../testweave-keyfile.json'
+import { InjectedArweaveSigner } from 'warp-contracts-plugin-deploy'
 
 const MOCK_OWNER = '0x-mock-owner'
 const MOCK_CONTRACT_TX_ID = 'mock-contract-tx-id'
@@ -26,8 +32,16 @@ const MOCK_ABC_CONFIG: ArtByCityConfig = {
     type: 'memcache'
   }
 }
+const TESTWEAVE_ADDRESS = 'MlV6DeOtRmakDOf6vgOBlif795tcWimgyPsYYNQ8q1Y'
 
-const signerMock = sinon.createStubInstance(ArweaveSigner)
+const arweaveSignerMock = sinon.createStubInstance(ArweaveSigner)
+arweaveSignerMock.pk = TestweaveJWK.n
+const injectedArweaveSignerMock = sinon.createStubInstance(
+  InjectedArweaveSigner
+)
+injectedArweaveSignerMock.publicKey = Buffer.from(
+  Arweave.utils.b64UrlToBuffer(TestweaveJWK.n)
+)
 const arweaveMock = sinon.createStubInstance(Arweave)
 const warpMock = sinon.createStubInstance(Warp)
 let authenticatedCurations: AuthenticatedArtByCityCurations
@@ -38,8 +52,9 @@ describe('Curation Module', () => {
       arweaveMock,
       warpMock,
       MOCK_ABC_CONFIG,
-      signerMock
+      arweaveSignerMock
     )
+
     warpMock.deployFromSourceTx.resolves({
       contractTxId: MOCK_CONTRACT_TX_ID
     })
@@ -56,98 +71,139 @@ describe('Curation Module', () => {
   })
 
   context('Authenticated Curation Module', () => {
-    it('creates ownable curations', async () => {
-      const curationId = await authenticatedCurations.create('ownable', {
-        owner: MOCK_OWNER,
-        title: 'My Ownable Curation'
+    context('Creating curation types', () => {
+      it('creates ownable curations', async () => {
+        const curationId = await authenticatedCurations.create('ownable', {
+          title: 'My Ownable Curation'
+        })
+
+        expect(curationId).to.equal(MOCK_CONTRACT_TX_ID)
+        expect(warpMock.deployFromSourceTx.calledOnce).to.be.true
+        const contractData = warpMock.deployFromSourceTx.firstCall.args[0]
+        expect(contractData.srcTxId).to.equal(
+          MOCK_ABC_CONFIG.contracts.curation.ownable
+        )
+        expect(
+          contractData.tags?.some(tag => {
+            return tag.get('name') === 'Contract-Name'
+              && tag.get('value') === 'Ownable-Curation-Contract'
+          })
+        ).to.be.true
       })
 
-      expect(curationId).to.equal(MOCK_CONTRACT_TX_ID)
-      expect(warpMock.deployFromSourceTx.calledOnce).to.be.true
-      const contractData = warpMock.deployFromSourceTx.firstCall.args[0]
-      expect(contractData.srcTxId).to.equal(
-        MOCK_ABC_CONFIG.contracts.curation.ownable
-      )
-      expect(
-        contractData.tags?.some(tag => {
-          return tag.get('name') === 'Contract-Name'
-            && tag.get('value') === 'Ownable-Curation-Contract'
+      it('creates whitelist curations', async () => {
+        const curationId = await authenticatedCurations.create('whitelist', {
+          title: 'My Whitelist Curation'
         })
-      ).to.be.true
-    })
 
-    it('creates whitelist curations', async () => {
-      const curationId = await authenticatedCurations.create('whitelist', {
-        owner: MOCK_OWNER,
-        title: 'My Whitelist Curation'
+        expect(curationId).to.equal(MOCK_CONTRACT_TX_ID)
+        expect(warpMock.deployFromSourceTx.calledOnce).to.be.true
+        const contractData = warpMock.deployFromSourceTx.firstCall.args[0]
+        expect(contractData.srcTxId).to.equal(
+          MOCK_ABC_CONFIG.contracts.curation.whitelist
+        )
+        expect(
+          contractData.tags?.some(tag => {
+            return tag.get('name') === 'Contract-Name'
+              && tag.get('value') === 'Whitelist-Curation-Contract'
+          })
+        ).to.be.true
       })
 
-      expect(curationId).to.equal(MOCK_CONTRACT_TX_ID)
-      expect(warpMock.deployFromSourceTx.calledOnce).to.be.true
-      const contractData = warpMock.deployFromSourceTx.firstCall.args[0]
-      expect(contractData.srcTxId).to.equal(
-        MOCK_ABC_CONFIG.contracts.curation.whitelist
-      )
-      expect(
-        contractData.tags?.some(tag => {
-          return tag.get('name') === 'Contract-Name'
-            && tag.get('value') === 'Whitelist-Curation-Contract'
+      it('creates collaborative curations', async () => {
+        const curationId = await authenticatedCurations.create('collaborative', {
+          title: 'My Collaborative Curation'
         })
-      ).to.be.true
-    })
 
-    it('creates collaborative curations', async () => {
-      const curationId = await authenticatedCurations.create('collaborative', {
-        owner: MOCK_OWNER,
-        title: 'My Collaborative Curation'
+        expect(curationId).to.equal(MOCK_CONTRACT_TX_ID)
+        expect(warpMock.deployFromSourceTx.calledOnce).to.be.true
+        const contractData = warpMock.deployFromSourceTx.firstCall.args[0]
+        expect(contractData.srcTxId).to.equal(
+          MOCK_ABC_CONFIG.contracts.curation.collaborative
+        )
+        expect(
+          contractData.tags?.some(tag => {
+            return tag.get('name') === 'Contract-Name'
+              && tag.get('value') === 'Collaborative-Curation-Contract'
+          })
+        ).to.be.true
       })
 
-      expect(curationId).to.equal(MOCK_CONTRACT_TX_ID)
-      expect(warpMock.deployFromSourceTx.calledOnce).to.be.true
-      const contractData = warpMock.deployFromSourceTx.firstCall.args[0]
-      expect(contractData.srcTxId).to.equal(
-        MOCK_ABC_CONFIG.contracts.curation.collaborative
-      )
-      expect(
-        contractData.tags?.some(tag => {
-          return tag.get('name') === 'Contract-Name'
-            && tag.get('value') === 'Collaborative-Curation-Contract'
-        })
-      ).to.be.true
+      it('creates collaborative whitelist curations', async () => {
+        const curationId = await authenticatedCurations.create(
+          'collaborative-whitelist',
+          { title: 'My Collaborative Whitelist Curation' }
+        )
+
+        expect(curationId).to.equal(MOCK_CONTRACT_TX_ID)
+        expect(warpMock.deployFromSourceTx.calledOnce).to.be.true
+        const contractData = warpMock.deployFromSourceTx.firstCall.args[0]
+        expect(contractData.srcTxId).to.equal(
+          MOCK_ABC_CONFIG.contracts.curation.collaborativeWhitelist
+        )
+        expect(
+          contractData.tags?.some(tag => {
+            return tag.get('name') === 'Contract-Name'
+              && tag.get('value') === 'Collaborative-Whitelist-Curation-Contract'
+          })
+        ).to.be.true
+      })
     })
 
-    it('creates collaborative whitelist curations', async () => {
-      const curationId = await authenticatedCurations.create(
-        'collaborative-whitelist',
-        {
-          owner: MOCK_OWNER,
-          title: 'My Collaborative Whitelist Curation'
-        }
-      )
-
-      expect(curationId).to.equal(MOCK_CONTRACT_TX_ID)
-      expect(warpMock.deployFromSourceTx.calledOnce).to.be.true
-      const contractData = warpMock.deployFromSourceTx.firstCall.args[0]
-      expect(contractData.srcTxId).to.equal(
-        MOCK_ABC_CONFIG.contracts.curation.collaborativeWhitelist
-      )
-      expect(
-        contractData.tags?.some(tag => {
-          return tag.get('name') === 'Contract-Name'
-            && tag.get('value') === 'Collaborative-Whitelist-Curation-Contract'
+    context('Curation Owner', async () => {
+      it('allows setting alternate owner on deployment', async () => {
+        await authenticatedCurations.create('ownable', {
+          title: 'My Alternate Owner Curation',
+          owner: MOCK_OWNER
         })
-      ).to.be.true
+
+        const contractData = warpMock.deployFromSourceTx.firstCall.args[0]
+        const initialState = JSON.parse(
+          contractData.initState
+        ) as CurationContractStates
+
+        expect(initialState.owner).to.equal(MOCK_OWNER)
+      })
+
+      it('sets deployer as owner with ArweaveSigner', async () => {
+        await authenticatedCurations.create('ownable', {
+          title: 'My Default Owner Curation'
+        })
+  
+        const contractData = warpMock.deployFromSourceTx.firstCall.args[0]
+        const initialState = JSON.parse(
+          contractData.initState
+        ) as CurationContractStates
+
+        expect(initialState.owner).to.equal(TESTWEAVE_ADDRESS)
+      })
+
+      it('sets deployer as owner with InjectedArweaveSigner', async () => {
+        const injectedSignerCurations = new AuthenticatedArtByCityCurations(
+          arweaveMock,
+          warpMock,
+          MOCK_ABC_CONFIG,
+          injectedArweaveSignerMock
+        )
+
+        await injectedSignerCurations.create('ownable', {
+          title: 'My Injected Signer Curation'
+        })
+
+        const contractData = warpMock.deployFromSourceTx.firstCall.args[0]
+        const initialState = JSON.parse(
+          contractData.initState
+        ) as CurationContractStates
+
+        expect(initialState.owner).to.equal(TESTWEAVE_ADDRESS)
+      })
     })
 
     it('limits ANS-110 title to 150 chars and desc to 300 chars', async () => {
       const title = 'My Curation'.padEnd(175)
       const description = 'My Curation'.padEnd(350)
 
-      await authenticatedCurations.create('ownable', {
-        owner: MOCK_OWNER,
-        title,
-        description
-      })
+      await authenticatedCurations.create('ownable', { title, description })
 
       const { tags } = warpMock.deployFromSourceTx.firstCall.args[0]
       const titleTag = tags?.find(tag => tag.get('name') === 'Title')
@@ -163,7 +219,6 @@ describe('Curation Module', () => {
       const myTag3 = { name: 'My-Tag-3', value: 'My Third Tag' }
 
       await authenticatedCurations.create('ownable', {
-        owner: MOCK_OWNER,
         title: 'My Custom Tags Curation',
         tags: [ myTag1, myTag2, myTag3 ]
       })
@@ -181,10 +236,7 @@ describe('Curation Module', () => {
     it('should generate a slug tag for curations based on title', async () => {
       const title = 'My Curation With A Slug'
       
-      await authenticatedCurations.create('ownable', {
-        owner: MOCK_OWNER,
-        title
-      })
+      await authenticatedCurations.create('ownable', { title })
 
       const { tags } = warpMock.deployFromSourceTx.firstCall.args[0]
       const slugTag = tags?.find(tag => tag.get('name') === 'Slug')
@@ -195,10 +247,7 @@ describe('Curation Module', () => {
     it('should generate slugs up to 150 chars', async () => {
       const title = ''.padEnd(175, 'a')
 
-      await authenticatedCurations.create('ownable', {
-        owner: MOCK_OWNER,
-        title
-      })
+      await authenticatedCurations.create('ownable', { title })
 
       const { tags } = warpMock.deployFromSourceTx.firstCall.args[0]
       const slugTag = tags?.find(tag => tag.get('name') === 'Slug')
@@ -210,7 +259,6 @@ describe('Curation Module', () => {
       const slug = 'my-custom-slug'
 
       await authenticatedCurations.create('ownable', {
-        owner: MOCK_OWNER,
         title: 'My Custom Slug Curation',
         slug
       })
@@ -225,7 +273,6 @@ describe('Curation Module', () => {
       const slug = 'a'.padEnd(175, 'a')
 
       await authenticatedCurations.create('ownable', {
-        owner: MOCK_OWNER,
         title: 'My Long Custom Slug Curation',
         slug
       })
@@ -238,7 +285,6 @@ describe('Curation Module', () => {
 
     it('should allow user to opt out of using a slug tag', async () => {
       await authenticatedCurations.create('ownable', {
-        owner: MOCK_OWNER,
         title: 'My Curation Without A Slug',
         slug: false
       })
@@ -251,7 +297,6 @@ describe('Curation Module', () => {
 
     it('adds Protocol: ArtByCity tag to curations', async () => {
       await authenticatedCurations.create('ownable', {
-        owner: MOCK_OWNER,
         title: 'My Art By City Tagged Curation'
       })
 
@@ -263,7 +308,6 @@ describe('Curation Module', () => {
 
     it('adds Contract-Version tag to curations', async () => {
       await authenticatedCurations.create('ownable', {
-        owner: MOCK_OWNER,
         title: 'My Art By City Tagged Curation'
       })
 

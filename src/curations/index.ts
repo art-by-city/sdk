@@ -49,7 +49,7 @@ export class UnknownCurationTypeError extends Error {
 }
 
 export interface CurationCreationOptions {
-  owner: string
+  owner?: string
   title: string
   description?: string
   topic?: string

@@ -15,6 +15,8 @@ import {
   UnknownCurationTypeError,
 } from './'
 import { generateSlug } from '../util'
+import { getOwnerFromSigner } from '../util/crypto'
+import { WithRequired, assertHasValueForKey } from '../util/types'
 
 export default class AuthenticatedArtByCityCurations
   extends ArtByCityCurations
@@ -66,7 +68,7 @@ export default class AuthenticatedArtByCityCurations
 
   private createInitialState(
     type: CurationType,
-    opts: CurationCreationOptions
+    opts: WithRequired<CurationCreationOptions, 'owner'>
   ): CurationContractStates {
     const base = {
       owner: opts.owner,
@@ -113,7 +115,13 @@ export default class AuthenticatedArtByCityCurations
       contractName,
       contractVersion
     } = this.determineCurationSource(type)
+
+    if (!opts.owner) {
+      opts.owner = await getOwnerFromSigner(this.signer)
+    }
+    assertHasValueForKey(opts, 'owner')
     const initialState = this.createInitialState(type, opts)
+    
     const tags = (opts.tags || []).map<Tag>(tag => new Tag(tag.name, tag.value))
 
     tags.push(
