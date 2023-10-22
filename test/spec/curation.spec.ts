@@ -111,9 +111,12 @@ describe('Curation Module', () => {
       })
 
       it('creates collaborative curations', async () => {
-        const curationId = await authenticatedCurations.create('collaborative', {
-          title: 'My Collaborative Curation'
-        })
+        const curationId = await authenticatedCurations.create(
+          'collaborative',
+          {
+            title: 'My Collaborative Curation'
+          }
+        )
 
         expect(curationId).to.equal(MOCK_CONTRACT_TX_ID)
         expect(warpMock.deployFromSourceTx.calledOnce).to.be.true
@@ -144,13 +147,14 @@ describe('Curation Module', () => {
         expect(
           contractData.tags?.some(tag => {
             return tag.get('name') === 'Contract-Name'
-              && tag.get('value') === 'Collaborative-Whitelist-Curation-Contract'
+              && tag.get('value')
+                === 'Collaborative-Whitelist-Curation-Contract'
           })
         ).to.be.true
       })
     })
 
-    context('Curation Owner', async () => {
+    context('Curation Owner', () => {
       it('allows setting alternate owner on deployment', async () => {
         await authenticatedCurations.create('ownable', {
           title: 'My Alternate Owner Curation',
