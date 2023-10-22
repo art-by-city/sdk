@@ -109,7 +109,7 @@ describe('Curation Module', () => {
       expect(curations).to.be.an('array').that.is.not.empty
     })
 
-    it.only('fetches curation transaction by id', async () => {
+    it('fetches curation transaction by id', async () => {
       const abc = new ArtByCity(arweave, config)
 
       const tx = await abc

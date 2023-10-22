@@ -215,7 +215,7 @@ describe('Curation Module', () => {
     })
 
     context('Curation Tags', () => {
-      it('limits ANS-110 title to 150 chars and desc to 300 chars', async () => {
+      it('limits ANS-110 title to 150 chars and desc to 300', async () => {
         const title = 'My Curation'.padEnd(175)
         const description = 'My Curation'.padEnd(350)
 
@@ -249,7 +249,7 @@ describe('Curation Module', () => {
         expect(foundTag3?.get('value')).to.equal(myTag3.value)
       })
 
-      it('should generate a slug tag for curations based on title', async () => {
+      it('should generate a slug for curations based on title', async () => {
         const title = 'My Curation With A Slug'
         
         await authenticatedCurations.create('ownable', { title })
