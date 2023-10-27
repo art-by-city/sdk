@@ -1,5 +1,3 @@
-import Arweave from 'arweave'
-
 export type PublicationType = 'image' | 'audio'
 export interface PublishingFile {
   data: string | Uint8Array
@@ -8,13 +6,25 @@ export interface PublishingFile {
   name: string // user defined file name with extension
   lastModified?: number // last modified timestamp in unix epoch ms
 }
+export interface OriginalImagePublishingFile extends PublishingFile {
+  type: ImageMimeTypes
+}
+export interface PreviewImagePublishingFile extends PublishingFile {
+  type: 'image/jpeg'
+}
+export interface PublicationImageWithThumbnails {
+  original: OriginalImagePublishingFile
+  small: PreviewImagePublishingFile
+  large: PreviewImagePublishingFile
+}
 export interface BasePublicationOptions {
   type: PublicationType
   title: string
   slug?: string
   description?: string
   city?: string
-  images: PublishingFile[]
+  images: PublicationImageWithThumbnails[]
+  topics?: string[]
 }
 export interface ImagePublicationOptions extends BasePublicationOptions {
   type: 'image'
@@ -27,24 +37,15 @@ export type PublicationOptions =
   | ImagePublicationOptions
   | AudioPublicationOptions
 
-export default class ArtByCityPublish {
-  constructor(private readonly arweave: Arweave) {}
+export type ImageMimeTypes =
+  | 'image/apng'
+  | 'image/avif'
+  | 'image/gif'
+  | 'image/jpeg'
+  | 'image/png'
+  | 'image/svg+xml'
+  | 'image/webp'
 
-  async publish(what: 'image', opts: ImagePublicationOptions): Promise<string>
-  async publish(what: 'audio', opts: AudioPublicationOptions): Promise<string>
-  async publish(
-    what: PublicationType,
-    opts: PublicationOptions
-  ): Promise<string> {
-    switch (what) {
-      case 'image':
-      case 'audio':
-      default:
-        throw new Error('This publication type is not yet implemented!')
-    }
-  }
-
-  private async publishImage(opts: ImagePublicationOptions) {
-
-  }
-}
+export {
+  default as AuthenticatedArtByCityPublications
+} from './authenticated-publications'

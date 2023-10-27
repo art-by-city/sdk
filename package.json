@@ -73,9 +73,11 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "arbundles": "^0.10.0",
     "ardb": "^1.1.10",
     "arweave": "^1.14.4",
     "buffer": "^6.0.3",
+    "uuid": "^9.0.1",
     "warp-contracts": "^1.4.21",
     "warp-contracts-plugin-deploy": "^1.0.9"
   }
