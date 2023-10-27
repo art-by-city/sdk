@@ -262,10 +262,10 @@ const abc = new ArtByCity()
 const address: string = '<an arweave address>'
 const username: string = 'jim'
 
-const { username, address } = await abc.legacy.usernames.resolve(username)
-const { username, address } = await abc.legacy.usernames.resolve(address)
+const { username, address } = await abc.usernames.resolve(username)
+const { username, address } = await abc.usernames.resolve(address)
 const resolvedAddress =
-  await abc.legacy.usernames.resolveAddressFromUsername(username)
+  await abc.usernames.resolveAddressFromUsername(username)
 const resolvedUsername =
-  await abc.legacy.usernames.resolveUsernameFromAddress(address)
+  await abc.usernames.resolveUsernameFromAddress(address)
 ```
