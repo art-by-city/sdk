@@ -1,9 +1,9 @@
 import Arweave from 'arweave'
+import { Warp } from 'warp-contracts'
 
 import { ArtByCityConfig } from '../config'
 import VerifiedCreators from './verified-creators.json'
 import LegacyTransactions from './transactions'
-import LegacyUsernames from './usernames'
 import LegacyMemcache from './memcache'
 import {
   LegacyProfile,
@@ -16,10 +16,10 @@ import {
   LegacyTipsFeed,
   LegacyAvatar
 } from './'
+import { InvalidAddressError, isValidAddress } from '../util/crypto'
 
 export default class ArtByCityLegacy {
-  private readonly transactions!: LegacyTransactions
-  public readonly usernames!: LegacyUsernames
+  public readonly transactions!: LegacyTransactions
   private readonly gatewayRoot!: string
   private readonly cacheEnabled!: boolean
   public readonly caches: {
@@ -38,12 +38,12 @@ export default class ArtByCityLegacy {
     tips: new LegacyMemcache<LegacyTipsFeed>()
   } /* eslint-enable indent */
 
-  constructor(arweave: Arweave, private readonly config: ArtByCityConfig) {
+  constructor(
+    arweave: Arweave,
+    warp: Warp,
+    private readonly config: ArtByCityConfig
+  ) {
     this.transactions = new LegacyTransactions(arweave, config.environment)
-    this.usernames = new LegacyUsernames(
-      config.usernamesContractId,
-      config.environment
-    )
     this.cacheEnabled = config.cache.type === 'memcache'
     const { protocol, host, port } = arweave.api.getConfig()
     this.gatewayRoot = `${protocol}://${host}:${port}`
@@ -77,6 +77,7 @@ export default class ArtByCityLegacy {
 
         return {
           id: tx.id,
+          creator: tx.owner.address,
           category: 'artwork',
           subCategory,
           slug: slugTag?.value || tx.id
@@ -192,8 +193,13 @@ export default class ArtByCityLegacy {
 
     const creator = typeof data.creator === 'string'
       ? data.creator
-      // TODO -> fallback on bundle tx.owner
-      : ''
+      : data.creator
+        && typeof data.creator === 'object'
+        && 'address' in data.creator
+        && typeof data.creator.address === 'string'
+        ? data.creator?.address
+        // TODO -> possibly fallback on bundle tx.owner ?
+        : ''
 
     const title = typeof data.title === 'string'
       ? data.title
@@ -208,14 +214,21 @@ export default class ArtByCityLegacy {
         : []
     const images = dataImages.map(di => {
       if (di && typeof di === 'object' && !Array.isArray(di)) {
-        const image = {
-          image: typeof di.image === 'string' ? di.image : '',
-          preview: typeof di.preview === 'string' ? di.preview : '',
-          preview4k: typeof di.preview4k === 'string' ? di.preview4k : '',
-          animated: typeof di.animated === 'boolean' ? di.animated : false
+        if (typeof di.dataUrl === 'string') {
+          return {
+            image: di.dataUrl,
+            preview: di.dataUrl,
+            preview4k: di.dataUrl,
+            animated: di.imageType === 'image/gif'
+          }
+        } else {
+          return {
+            image: typeof di.image === 'string' ? di.image : '',
+            preview: typeof di.preview === 'string' ? di.preview : '',
+            preview4k: typeof di.preview4k === 'string' ? di.preview4k : '',
+            animated: typeof di.animated === 'boolean' ? di.animated : false
+          }
         }
-
-        return image
       }
 
       return { image: '', preview: '', preview4k: '' }
@@ -230,7 +243,8 @@ export default class ArtByCityLegacy {
       creator,
       title,
       slug,
-      images
+      images,
+      image: images[0]
     }
 
     if (typeof data.description === 'string') {
@@ -319,6 +333,10 @@ export default class ArtByCityLegacy {
     address: string,
     useCache: boolean = true
   ): Promise<LegacyProfile | null> {
+    if (!isValidAddress(address)) {
+      throw new InvalidAddressError()
+    }
+
     if (this.cacheEnabled && useCache) {
       const cached = this.caches.profiles.get(address)
       if (cached) { return cached }

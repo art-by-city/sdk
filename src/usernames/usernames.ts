@@ -1,6 +1,4 @@
-import { LoggerFactory, Warp, WarpFactory } from 'warp-contracts'
-
-import { ArtByCityEnvironment } from '../config'
+import BaseContractProvider from '../common/contract'
 
 export interface UsernamesContractState {
   usernames: {
@@ -8,22 +6,9 @@ export interface UsernamesContractState {
   }
 }
 
-export default class LegacyUsernames {
-  private warp!: Warp
-
-  constructor(
-    public readonly usernamesContractId: string,
-    environment: ArtByCityEnvironment
-  ) {
-    LoggerFactory.INST.logLevel(
-      environment !== 'development' ? 'fatal' : 'error'
-    )
-
-    this.warp = environment !== 'development'
-      ? WarpFactory.forMainnet({ inMemory: true, dbLocation: '.art-by-city' })
-      : WarpFactory.forLocal()
-  }
-
+export default class ArtByCityUsernames
+  extends BaseContractProvider<UsernamesContractState>
+{
   async resolve(
     usernameOrAddress: string
   ): Promise<{ username: string | null, address: string | null }> {
@@ -55,9 +40,9 @@ export default class LegacyUsernames {
   }
 
   async resolveAddressFromUsername(username: string): Promise<string | null> {
-    const { cachedValue: { state: { usernames } } } = await this.warp
-      .contract<UsernamesContractState>(this.usernamesContractId)
-      .readState()
+    const {
+      cachedValue: { state: { usernames } }
+    } = await this.contract.readState()
 
     for (const address in usernames) {
       if (usernames[address] === username) {
@@ -69,9 +54,9 @@ export default class LegacyUsernames {
   }
 
   async resolveUsernameFromAddress(address: string): Promise<string | null> {
-    const { cachedValue: { state: { usernames } } } = await this.warp
-      .contract<UsernamesContractState>(this.usernamesContractId)
-      .readState()
+    const {
+      cachedValue: { state: { usernames } }
+    } = await this.contract.readState()
 
     return usernames[address] || null
   }

@@ -2,7 +2,12 @@ import 'mocha'
 import chai, { expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import Arweave from 'arweave'
+import { ArweaveSigner } from 'warp-arbundles'
+import {
+  InjectedArweaveSigner
+} from 'warp-contracts-plugin-deploy'
 
+import TestweaveJWK from '../testweave-keyfile.json'
 import ArtByCity, { ArtByCityEnvironment } from '../../src'
 import ArtByCityLegacy from '../../src/legacy'
 import { JWKInterface } from '../../src/util/types'
@@ -47,32 +52,27 @@ describe('ArtByCity SDK', () => {
   })
 
   context('Allows creating an authenticated client', () => {
-    it('from a wallet provider (web)', async () => {
+    it('from a wallet provider (web)', () => {
       global.window = { arweaveWallet: {} } as (Window & typeof globalThis)
 
-      const abc = await new ArtByCity().connect()
+      const abc = new ArtByCity().connect()
 
-      expect(abc.wallet).to.equal('use_wallet')
+      expect(abc.signer).to.to.be.an.instanceOf(InjectedArweaveSigner)
 
       // @ts-expect-error un-setting mock
       global.window = undefined
     })
 
-    it('from a wallet keyfile', async () => {
-      const jwk = { mock: 'keyfile' } as unknown as JWKInterface
-      const abc = await new ArtByCity().connect(jwk)
+    it('from a wallet keyfile', () => {
+      const abc = new ArtByCity().connect(TestweaveJWK)
 
-      expect(abc.wallet).to.equal(jwk)
+      expect(abc.signer).to.to.be.an.instanceOf(ArweaveSigner)
     })
 
-    it('but throws when wallet provider unavailable', async () => {
+    it('but throws when wallet provider unavailable', () => {
       const abc = new ArtByCity()
 
-      return expect(abc.connect()).to.be.rejectedWith(Error)
+      expect(() => abc.connect()).to.throw(Error)
     })
-  })
-
-  context.only('Authenticated Client', () => {
-    context.only('Publishing')
   })
 })

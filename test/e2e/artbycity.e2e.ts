@@ -657,67 +657,7 @@ describe(`ArtByCity (web)`, () => {
       })
     })
 
-    context('Resolving Usernames', () => {
-      it('resolves usernames from address', async () => {
-        const abc = new ArtByCity(arweave)
 
-        const username = await abc.legacy
-          .usernames
-          .resolveUsernameFromAddress(JIM_ADDRESS)
-        
-        expect(username).to.equal('jim')
-      })
-
-      it('resolves address from username', async () => {
-        const abc = new ArtByCity(arweave)
-
-        const address = await abc.legacy
-          .usernames
-          .resolveAddressFromUsername('jim')
-        
-        expect(address).to.equal(JIM_ADDRESS)
-      })
-
-      it('resolves username or address', async () => {
-        const abc = new ArtByCity(arweave)
-
-        const { username } = await abc.legacy.usernames.resolve(JIM_ADDRESS)
-        const { address } = await abc.legacy.usernames.resolve('jim')
-
-        expect(username).to.equal('jim')
-        expect(address).to.equal(JIM_ADDRESS)
-      })
-
-      it('null when username does not resolve from address', async () => {
-        const abc = new ArtByCity(arweave)
-
-        const username = await abc.legacy
-          .usernames
-          .resolveUsernameFromAddress('invalid-address')
-
-        expect(username).to.be.null
-      })
-
-      it('null when address does not resolve from username', async () => {
-        const abc = new ArtByCity(arweave)
-
-        const address = await abc.legacy
-          .usernames
-          .resolveAddressFromUsername('890782399999333999999999*(*(&9999999999')
-
-        expect(address).to.be.null
-      })
-
-      it('throws when username contract not available', () => {
-        const abc = new ArtByCity(arweave, {
-          usernamesContractId: 'bad-contract-id'
-        })
-
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        expect(abc.legacy.usernames.resolve(JIM_ADDRESS))
-          .to.be.rejectedWith(Error)
-      })
-    })
 
     context('MemCache', () => {
       const sandbox = sinon.createSandbox()

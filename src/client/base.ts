@@ -1,31 +1,49 @@
 import Arweave from 'arweave'
+import { LoggerFactory, Warp, WarpFactory } from 'warp-contracts'
+import { DeployPlugin } from 'warp-contracts-plugin-deploy'
 
 import ArtByCityLegacy from '../legacy'
-import { ArtByCityConfig } from '../config'
+import {
+  ARTBYCITY_STAGING_CONFIG,
+  ArtByCityConfig,
+  DEFAULT_ARTBYCITY_CONFIG
+} from '../config'
+import { ArtByCityCurations } from '../curations'
+import { ArtByCityUsernames } from '../usernames'
 
-export default class BaseArtByCityClient {
-  public arweave!: Arweave
-  public legacy!: ArtByCityLegacy
+export default class ArtByCity {
+  public readonly arweave!: Arweave
+  public readonly warp!: Warp
+  public readonly legacy!: ArtByCityLegacy
   public readonly config!: ArtByCityConfig
+  public readonly curations!: ArtByCityCurations
+  public readonly usernames!: ArtByCityUsernames
 
   constructor(arweave?: Arweave, config?: Partial<ArtByCityConfig>) {
-    this.arweave = arweave || Arweave.init({})
-
     const environment = config?.environment || 'production'
-    const usernamesContractId = config?.usernamesContractId
-      ? config.usernamesContractId
-      : environment === 'production'
-        ? 'BaAP2wyqSiF7Eqw3vcBvVss3C0H8i1NGQFgMY6nGpnk'
-        : 'UHPC-7wenVg-JyS81EXKCnLlKvjSbfrIsnWt1F8hueg'
+    const defaultConfig = environment === 'staging'
+      ? ARTBYCITY_STAGING_CONFIG
+      : DEFAULT_ARTBYCITY_CONFIG
 
-    this.config = {
-      environment,
-      usernamesContractId,
-      cache: {
-        type: config?.cache?.type === 'disabled' ? 'disabled' : 'memcache'
-      }
-    }
+    this.config = { ...defaultConfig, ...config }
     
-    this.legacy = new ArtByCityLegacy(this.arweave, this.config)
+    LoggerFactory.INST.logLevel(
+      environment !== 'development' ? 'fatal' : 'error'
+    )
+    this.arweave = arweave || Arweave.init({})
+    this.warp = environment !== 'development'
+      ? WarpFactory.forMainnet({ inMemory: true, dbLocation: '.art-by-city' })
+      : WarpFactory.forLocal()
+    this.warp = this.warp.use(new DeployPlugin())
+    this.legacy = new ArtByCityLegacy(this.arweave, this.warp, this.config)
+    this.curations = new ArtByCityCurations(
+      this.arweave,
+      this.warp,
+      this.config
+    )
+    this.usernames = new ArtByCityUsernames(
+      this.warp,
+      this.config.contracts.usernames
+    )
   }
 }
