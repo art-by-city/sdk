@@ -1,6 +1,5 @@
 import 'mocha'
-import chai, { expect } from 'chai'
-import chaiAsPromised from 'chai-as-promised'
+import { expect } from 'chai'
 import Arweave from 'arweave'
 import { ArweaveSigner } from 'warp-arbundles'
 import {
@@ -10,9 +9,6 @@ import {
 import TestweaveJWK from '../testweave-keyfile.json'
 import ArtByCity, { ArtByCityEnvironment } from '../../src'
 import ArtByCityLegacy from '../../src/legacy'
-import { JWKInterface } from '../../src/util/types'
-
-chai.use(chaiAsPromised)
 
 describe('ArtByCity SDK', () => {
   it('Constructs with default Arweave instance', () => {
