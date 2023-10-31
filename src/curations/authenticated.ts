@@ -25,10 +25,7 @@ export default class AuthenticatedArtByCityCurations
     arweave: Arweave,
     protected warp: Warp,
     config: ArtByCityConfig,
-    private readonly signer:
-      | ArweaveSigner
-      | InjectedArweaveSigner
-      | JWKInterface
+    private readonly signer: ArweaveSigner | InjectedArweaveSigner
   ) {
     super(arweave, warp, config)
   }
