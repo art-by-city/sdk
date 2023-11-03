@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid'
 import { Tag } from 'warp-contracts'
 
 export { default as ArFSClient } from './arfs'
@@ -44,7 +45,6 @@ export function generateArFSFolderTags(opts: {
 
 export function generateArFSFileTags(opts: {
   driveId: string,
-  fileId: string,
   parentFolderId: string,
   unixTime: string
 }) {
@@ -54,7 +54,7 @@ export function generateArFSFileTags(opts: {
     new Tag('Content-Type', 'application/json'),
     new Tag('Drive-Id', opts.driveId),
     new Tag('Entity-Type', 'file'),
-    new Tag('File-Id', opts.fileId),
+    new Tag('File-Id', uuidv4()),
     new Tag('Parent-Folder-Id', opts.parentFolderId),
     new Tag('Unix-Time', opts.unixTime)
   ]

@@ -16,12 +16,16 @@ export interface ARFSFileTags {
   ArFS: 0.13
   ['Entity-Type']: 'file'
   ['Content-Type']: 'application/json'
-  Cipher?: 'AES256-GCM'
-  ['Cipher-IV']?: string
   ['Drive-Id']: string // UUID
   ['File-Id']: string // UUID
-  ['Parent-Folder-Id']?: string // UUID
   ['Unix-Time']: string // seconds since unix epoch
+
+  // Drive Path
+  ['Parent-Folder-Id']?: string // UUID
+
+  // Private Files
+  Cipher?: 'AES256-GCM'
+  ['Cipher-IV']?: string
 }
 
 export interface ARFSFileMetadata {

@@ -17,6 +17,7 @@ const MOCK_ABC_CONFIG: ArtByCityConfig = {
   environment: 'development',
   contracts: {
     usernames: 'mock-usernames-contract-id',
+    atomicLicense: 'mock-atomic-license-contract-id',
     curation: {
       ownable: 'mock-ownable-curation-contract-src-id',
       whitelist: 'mock-whitelist-curation-contract-src-id',

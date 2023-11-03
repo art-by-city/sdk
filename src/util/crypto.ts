@@ -22,7 +22,7 @@ export async function getArweaveAddressFromPublicKey(
   return Arweave.utils.bufferTob64Url(hashedPublicKey)
 }
 
-export async function getOwnerFromSigner(
+export async function getAddressFromSigner(
   signer: ArweaveSigner | InjectedArweaveSigner | JWKInterface
 ): Promise<string> {
   if (

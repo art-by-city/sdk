@@ -71,6 +71,7 @@ describe('ArtByCity Usernames Module', () => {
     const abc = new ArtByCity(arweave, {
       contracts: {
         usernames: 'bad-contract-id',
+        atomicLicense: 'bad-contract-id',
         curation: {
           ownable: 'bad-contract-id',
           whitelist: 'bad-contract-id',

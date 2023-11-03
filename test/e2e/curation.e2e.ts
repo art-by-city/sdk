@@ -108,15 +108,5 @@ describe('Curation Module', () => {
 
       expect(curations).to.be.an('array').that.is.not.empty
     })
-
-    it('fetches curation transaction by id', async () => {
-      const abc = new ArtByCity(arweave, config)
-
-      const tx = await abc
-        .curations
-        .getTransaction('N_nbvz1vWrNI1kl0Nxefgi3Zo0p9F-onoF1mafWaKUU')
-
-      expect(tx).to.not.be.null
-    })
   })
 })

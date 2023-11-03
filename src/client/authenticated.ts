@@ -7,11 +7,13 @@ import { JWKInterface } from '../util/types'
 import { ArtByCityConfig } from '../config'
 import { AuthenticatedArtByCityCurations } from '../curations'
 import { AuthenticatedArFSClient } from '../arfs'
+import { AuthenticatedArtByCityPublications } from '../publications'
 import BaseArtByCityClient from './base'
 
 export default class AuthenticatedArtByCityClient extends BaseArtByCityClient {
   declare public readonly curations: AuthenticatedArtByCityCurations
   declare public readonly arfs: AuthenticatedArFSClient
+  declare public readonly publications: AuthenticatedArtByCityPublications
   declare public readonly signer: ArweaveSigner | InjectedArweaveSigner
 
   constructor(
@@ -46,7 +48,12 @@ export default class AuthenticatedArtByCityClient extends BaseArtByCityClient {
     )
     this.arfs = new AuthenticatedArFSClient(
       this.arweave,
+      this.signer
+    )
+    this.publications = new AuthenticatedArtByCityPublications(
       this.config,
+      this.arweave,
+      this.arfs,
       this.signer
     )
   }
