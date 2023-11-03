@@ -7,7 +7,6 @@ import NodeCryptoDriver from 'arweave/node/lib/crypto/node-driver'
 import { ArweaveSigner } from 'warp-arbundles'
 import axios from 'axios'
 
-import { ArtByCityConfig } from '../../src'
 import { ArFSClient, AuthenticatedArFSClient } from '../../src/arfs'
 import TestweaveJWK from '../testweave-keyfile.json'
 
