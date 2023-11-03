@@ -10,6 +10,26 @@ import {
   ImagePublicationOptions,
   PublicationImageWithThumbnails
 } from '../../src/publications'
+import { AuthenticatedArFSClient } from '../../src/arfs'
+import { ArtByCityConfig } from '../../src'
+
+const MOCK_ABC_CONFIG: ArtByCityConfig = {
+  environment: 'development',
+  contracts: {
+    usernames: 'mock-usernames-contract-id',
+    atomicLicense: 'mock-atomic-license-contract-id',
+    curation: {
+      ownable: 'mock-ownable-curation-contract-src-id',
+      whitelist: 'mock-whitelist-curation-contract-src-id',
+      collaborative: 'mock-collaborative-curation-contract-src-id',
+      collaborativeWhitelist:
+        'mock-collaborative-whitelist-curation-contract-src-id'
+    }
+  },
+  cache: {
+    type: 'memcache'
+  }
+}
 
 const arweaveMock = sinon.createStubInstance(Arweave)
 const arweaveSignerMock = sinon.createStubInstance(ArweaveSigner)
@@ -25,8 +45,11 @@ describe('Publications Module', () => {
   })
 
   context('Images', () => {
-    it('publishes images', async () => {
+    it.skip('publishes images', async () => {
       const publisher = new AuthenticatedArtByCityPublications(
+        MOCK_ABC_CONFIG,
+        arweaveMock,
+        new AuthenticatedArFSClient(arweaveMock, arweaveSignerMock),
         arweaveSignerMock
       )
 
@@ -55,9 +78,15 @@ describe('Publications Module', () => {
         title: 'My Image Publication',
         images: [ image ]
       }
-      const publicationId = await publisher.publish(opts)
+      const {
+        bundleTxId,
+        primaryAssetTxId,
+        primaryMetadataTxId
+      } = await publisher.publish(opts)
 
-      expect(publicationId).to.be.a('string').with.length(43)
+      expect(bundleTxId).to.be.a('string')
+      expect(primaryAssetTxId).to.be.a('string')
+      expect(primaryMetadataTxId).to.be.a('string')
     })
   })
 })

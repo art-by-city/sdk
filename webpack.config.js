@@ -6,7 +6,8 @@ config.webtests = {
   name: "web-tests",
   // entry: "./test/e2e/artbycity.e2e.ts",
   // entry: "./test/e2e/curation.e2e.ts",
-  entry: "./test/e2e/usernames.e2e.ts",
+  // entry: "./test/e2e/usernames.e2e.ts",
+  entry: "./test/e2e/publications.e2e.ts",
   mode: "development",
   target: "web",
   module: {
@@ -29,16 +30,20 @@ config.webtests = {
     fallback: {
       // process: require.resolve("process/browser"),
       // crypto: require.resolve("crypto-browserify"),
-      // stream: require.resolve("stream-browserify"),
+      stream: require.resolve("stream-browserify"),
+      zlib: require.resolve('browserify-zlib'),
+      path: require.resolve('path-browserify')
     },
   },
   plugins: [
-    new webpack.IgnorePlugin({ resourceRegExp: /mocha/ })
-    // new webpack.ProvidePlugin({
-    //   process: "process/browser",
-    //   crypto: "crypto-browserify",
-    //   stream: "stream-browserify",
-    // }),
+    new webpack.IgnorePlugin({ resourceRegExp: /mocha/ }),
+    new webpack.ProvidePlugin({
+      // process: "process/browser",
+      crypto: "crypto-browserify",
+      stream: "stream-browserify",
+      zlib: 'browserify-zlib',
+      path: 'path-browserify'
+    }),
   ],
   devtool: "inline-source-map",
   devServer: {

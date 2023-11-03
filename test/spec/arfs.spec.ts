@@ -13,22 +13,6 @@ import TestweaveJWK from '../testweave-keyfile.json'
 
 const MOCK_OWNER = '0x-mock-owner'
 const MOCK_CONTRACT_TX_ID = 'mock-contract-tx-id'
-const MOCK_ABC_CONFIG: ArtByCityConfig = {
-  environment: 'development',
-  contracts: {
-    usernames: 'mock-usernames-contract-id',
-    curation: {
-      ownable: 'mock-ownable-curation-contract-src-id',
-      whitelist: 'mock-whitelist-curation-contract-src-id',
-      collaborative: 'mock-collaborative-curation-contract-src-id',
-      collaborativeWhitelist:
-        'mock-collaborative-whitelist-curation-contract-src-id'
-    }
-  },
-  cache: {
-    type: 'memcache'
-  }
-}
 
 const arweaveMock = sinon.createStubInstance(Arweave)
 const arweaveApiMock = sinon.createStubInstance(ArweaveApi)
@@ -55,7 +39,7 @@ describe('ArFS Module', () => {
     let arfs: ArFSClient
 
     beforeEach(() => {
-      arfs = new ArFSClient(arweaveMock, MOCK_ABC_CONFIG)
+      arfs = new ArFSClient(arweaveMock)
     })
 
     it('gets publication drive by address', async () => {
@@ -94,7 +78,6 @@ describe('ArFS Module', () => {
     beforeEach(() => {
       arfs = new AuthenticatedArFSClient(
         arweaveMock,
-        MOCK_ABC_CONFIG,
         new ArweaveSigner(TestweaveJWK)
       )
 

@@ -2,14 +2,11 @@ import Arweave from 'arweave'
 import ArDB from 'ardb'
 import ArdbTransaction from 'ardb/lib/models/transaction'
 
-import { ArtByCityConfig } from '../config'
-
 export default class ArFSClient {
   private readonly ardb!: ArDB
 
   constructor(
-    private readonly arweave: Arweave,
-    private readonly config: ArtByCityConfig
+    arweave: Arweave
   ) {
     this.ardb = new ArDB(arweave)
   }

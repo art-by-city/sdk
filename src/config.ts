@@ -10,7 +10,8 @@ export type CacheStrategy = 'disabled' | 'memcache'
 export type ArtByCityConfig = {
   environment: ArtByCityEnvironment
   contracts: {
-    usernames: string
+    atomicLicense: string
+    usernames: string    
     curation: {
       ownable: string
       whitelist: string
@@ -26,7 +27,8 @@ export type ArtByCityConfig = {
 export const DEFAULT_ARTBYCITY_CONFIG: ArtByCityConfig = {
   environment: 'production',
   contracts: {
-    usernames: 'NKj42L1tJ6SfAitwg3Qt3SZ2Us64IsPSTSCaJEzTunI',
+    atomicLicense: 'UJk7yvRhFASZkvPBRps6eLGwNpzCwbCnUDV1LJlK10o',
+    usernames: 'NKj42L1tJ6SfAitwg3Qt3SZ2Us64IsPSTSCaJEzTunI',    
     curation: {
       ownable: 'FYeph502kp_B7JT5S7431SPerldciZLcMEZDzgmnmWc',
       whitelist: 'wQyCsSM-gROX2iVUaezrfNJg-z9MJdy_FCJB5oEx8cY',
@@ -42,6 +44,7 @@ export const DEFAULT_ARTBYCITY_CONFIG: ArtByCityConfig = {
 export const ARTBYCITY_STAGING_CONFIG: ArtByCityConfig = {
   environment: 'staging',
   contracts: {
+    atomicLicense: 'UJk7yvRhFASZkvPBRps6eLGwNpzCwbCnUDV1LJlK10o',
     usernames: 'p8kCOXA7VsXQcmMg4Q5AYMvyXzJbDl8iPUG1uvUBAA0',
     curation: {
       ownable: 'FYeph502kp_B7JT5S7431SPerldciZLcMEZDzgmnmWc',

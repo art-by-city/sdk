@@ -15,7 +15,7 @@ import {
   UnknownCurationTypeError,
 } from './'
 import { generateSlug } from '../util'
-import { getOwnerFromSigner } from '../util/crypto'
+import { getAddressFromSigner } from '../util/crypto'
 import { WithRequired, assertHasValueForKey } from '../util/types'
 
 export default class AuthenticatedArtByCityCurations
@@ -114,7 +114,7 @@ export default class AuthenticatedArtByCityCurations
     } = this.determineCurationSource(type)
 
     if (!opts.owner) {
-      opts.owner = await getOwnerFromSigner(this.signer)
+      opts.owner = await getAddressFromSigner(this.signer)
     }
     assertHasValueForKey(opts, 'owner')
     const initialState = this.createInitialState(type, opts)

@@ -1,4 +1,4 @@
-export type PublicationType = 'image' | 'audio'
+export type PublicationType = 'image' | 'audio' | 'model' | 'video' | 'text'
 export interface PublishingFile {
   data: string | Uint8Array
   type: string // mime type
@@ -25,6 +25,8 @@ export interface BasePublicationOptions {
   city?: string
   images: PublicationImageWithThumbnails[]
   topics?: string[]
+  driveId?: string
+  folderId?: string
 }
 export interface ImagePublicationOptions extends BasePublicationOptions {
   type: 'image'
@@ -33,9 +35,21 @@ export interface ImagePublicationOptions extends BasePublicationOptions {
 export interface AudioPublicationOptions extends BasePublicationOptions {
   type: 'audio'
 }
+export interface ModelPublicationOptions extends BasePublicationOptions {
+  type: 'model'
+}
+export interface VideoPublicationOptions extends BasePublicationOptions {
+  type: 'video'
+}
+export interface TextPublicationOptions extends BasePublicationOptions {
+  type: 'text'
+}
 export type PublicationOptions =
   | ImagePublicationOptions
   | AudioPublicationOptions
+  | ModelPublicationOptions
+  | VideoPublicationOptions
+  | TextPublicationOptions
 
 export type ImageMimeTypes =
   | 'image/apng'

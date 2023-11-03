@@ -5,7 +5,6 @@ import {
 } from 'warp-contracts-plugin-deploy'
 import { v4 as uuidv4 } from 'uuid'
 
-import { ArtByCityConfig } from '../config'
 import ArFSClient from './arfs'
 import { generateArFSDriveTags, generateArFSFolderTags } from './'
 import TransactionsModule from '../common/transactions'
@@ -15,11 +14,31 @@ export default class AuthenticatedArFSClient extends ArFSClient {
 
   constructor(
     arweave: Arweave,
-    config: ArtByCityConfig,
     private readonly signer: ArweaveSigner | InjectedArweaveSigner
   ) {
-    super(arweave, config)
+    super(arweave)
     this.transactions = new TransactionsModule(arweave)
+  }
+
+  async getOrCreatePublicationRoot(address: string): Promise<{
+    driveId: string,
+    folderId: string
+  }> {
+    const publicationRoot = await this.getPublicationRoot(address)
+
+    if (publicationRoot) {
+      return publicationRoot
+    }
+
+    const newPublicationRoot = await this.createDrive(
+      'Publications',
+      true
+    )
+
+    return {
+      driveId: newPublicationRoot.driveId,
+      folderId: newPublicationRoot.rootFolderId
+    }
   }
 
   async createDrive(name: string, setAsPublicationRoot?: boolean): Promise<{
