@@ -6,14 +6,13 @@ import { InjectedArweaveSigner } from 'warp-contracts-plugin-deploy'
 import { JWKInterface } from '../util/types'
 import { ArtByCityConfig } from '../config'
 import { AuthenticatedArtByCityCurations } from '../curations'
+import { AuthenticatedArFSClient } from '../arfs'
 import BaseArtByCityClient from './base'
 
 export default class AuthenticatedArtByCityClient extends BaseArtByCityClient {
   declare public readonly curations: AuthenticatedArtByCityCurations
-  declare public readonly signer:
-    | ArweaveSigner
-    | InjectedArweaveSigner
-    | JWKInterface
+  declare public readonly arfs: AuthenticatedArFSClient
+  declare public readonly signer: ArweaveSigner | InjectedArweaveSigner
 
   constructor(
     public readonly arweave: Arweave,
@@ -32,7 +31,7 @@ export default class AuthenticatedArtByCityClient extends BaseArtByCityClient {
         }
         this.signer = new InjectedArweaveSigner(window.arweaveWallet)
       } else {
-        this.signer = jwk
+        this.signer = new ArweaveSigner(jwk)
       }
     } else {
       if (!jwk) { throw new Error('jwk required for connect() in node env') }
@@ -42,6 +41,11 @@ export default class AuthenticatedArtByCityClient extends BaseArtByCityClient {
     this.curations = new AuthenticatedArtByCityCurations(
       this.arweave,
       this.warp,
+      this.config,
+      this.signer
+    )
+    this.arfs = new AuthenticatedArFSClient(
+      this.arweave,
       this.config,
       this.signer
     )
