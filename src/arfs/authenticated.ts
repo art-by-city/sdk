@@ -1,11 +1,9 @@
 import Arweave from 'arweave'
-import { JWKInterface } from 'warp-contracts'
 import { ArweaveSigner, createData } from 'warp-arbundles'
 import {
   InjectedArweaveSigner
 } from 'warp-contracts-plugin-deploy'
 import { v4 as uuidv4 } from 'uuid'
-import axios from 'axios'
 
 import { ArtByCityConfig } from '../config'
 import ArFSClient from './arfs'
@@ -21,10 +19,10 @@ export default class AuthenticatedArFSClient extends ArFSClient {
     private readonly signer: ArweaveSigner | InjectedArweaveSigner
   ) {
     super(arweave, config)
-    this.transactions = new TransactionsModule()
+    this.transactions = new TransactionsModule(arweave)
   }
 
-  async createDrive(name: string): Promise<{
+  async createDrive(name: string, setAsPublicationRoot?: boolean): Promise<{
     driveId: string
     driveTxId: string
     rootFolderId: string
@@ -36,13 +34,18 @@ export default class AuthenticatedArFSClient extends ArFSClient {
     const drivePrivacy = 'public'
 
     const drive = { name, rootFolderId }
-    const driveTags = generateArFSDriveTags({ driveId, drivePrivacy, unixTime })
+    const driveTags = generateArFSDriveTags({
+      driveId,
+      drivePrivacy,
+      unixTime
+    })
     
     const folder = { name }
     const folderTags = generateArFSFolderTags({
       driveId,
       folderId: rootFolderId,
-      unixTime
+      unixTime,
+      setAsPublicationRoot
     })
 
     const driveDataItem = createData(

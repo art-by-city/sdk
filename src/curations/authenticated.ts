@@ -1,5 +1,5 @@
 import Arweave from 'arweave'
-import { JWKInterface, Tag, Warp } from 'warp-contracts'
+import { Tag, Warp } from 'warp-contracts'
 import { ArweaveSigner } from 'warp-arbundles'
 import {
   InjectedArweaveSigner,

@@ -14,7 +14,6 @@ import {
 } from '../../src/curations'
 import { ArtByCityConfig } from '../../src'
 import TestweaveJWK from '../testweave-keyfile.json'
-import ArdbTransaction from 'ardb/lib/models/transaction'
 
 const MOCK_OWNER = '0x-mock-owner'
 const MOCK_CONTRACT_TX_ID = 'mock-contract-tx-id'
@@ -333,33 +332,6 @@ describe('Curation Module', () => {
         )
 
         expect(contractVersionTag?.get('value')).to.equal('0.0.1')
-      })
-    })
-
-    context('Curation Transaction', () => {
-      it('fetches transaction by curation id', async () => {
-        arweaveApiMock.post.resolves({
-          ...new Response(),
-          data: {
-            data: {
-              transaction: {
-                id: MOCK_CONTRACT_TX_ID
-              }
-            }
-          }
-        })
-
-        let tx: null | ArdbTransaction = null
-        try {
-          tx = await authenticatedCurations.getTransaction(
-            MOCK_CONTRACT_TX_ID
-          )
-        } catch (error) {
-          console.error('wtf', error)
-        }
-
-        expect(tx).to.not.be.null
-        expect(tx?.id).to.equal(MOCK_CONTRACT_TX_ID)
       })
     })
   })

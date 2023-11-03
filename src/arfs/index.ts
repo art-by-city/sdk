@@ -3,7 +3,7 @@ import { Tag } from 'warp-contracts'
 export { default as ArFSClient } from './arfs'
 export { default as AuthenticatedArFSClient } from './authenticated'
 
-export function generateArFSDriveTags({ driveId, drivePrivacy, unixTime }: {
+export function generateArFSDriveTags(opts: {
   driveId: string,
   drivePrivacy: 'public',
   unixTime: string
@@ -12,35 +12,37 @@ export function generateArFSDriveTags({ driveId, drivePrivacy, unixTime }: {
     new Tag('Client', '@artbycity/sdk'),
     new Tag('ArFS', '0.13'),
     new Tag('Content-Type', 'application/json'),
-    new Tag('Drive-Id', driveId),
-    new Tag('Drive-Privacy', drivePrivacy),
+    new Tag('Drive-Id', opts.driveId),
+    new Tag('Drive-Privacy', opts.drivePrivacy),
     new Tag('Entity-Type', 'drive'),
-    new Tag('Unix-Time', unixTime)
+    new Tag('Unix-Time', opts.unixTime)
   ]
 }
 
-export function generateArFSFolderTags({ driveId, folderId, unixTime }: {
+export function generateArFSFolderTags(opts: {
   driveId: string,
   folderId: string,
-  unixTime: string
+  unixTime: string,
+  setAsPublicationRoot?: boolean
 }) {
-  return [
+  const tags = [
     new Tag('Client', '@artbycity/sdk'),
     new Tag('ArFS', '0.13'),
     new Tag('Content-Type', 'application/json'),
-    new Tag('Drive-Id', driveId),
+    new Tag('Drive-Id', opts.driveId),
     new Tag('Entity-Type', 'folder'),
-    new Tag('Folder-Id', folderId ),
-    new Tag('Unix-Time', unixTime)
+    new Tag('Folder-Id', opts.folderId),
+    new Tag('Unix-Time', opts.unixTime)
   ]
+
+  if (opts.setAsPublicationRoot) {
+    tags.push(new Tag('Folder-Type', 'publications'))
+  }
+
+  return tags
 }
 
-export function generateArFSFileTags({
-  driveId,
-  fileId,
-  parentFolderId,
-  unixTime
-}: {
+export function generateArFSFileTags(opts: {
   driveId: string,
   fileId: string,
   parentFolderId: string,
@@ -50,10 +52,10 @@ export function generateArFSFileTags({
     new Tag('Client', '@artbycity/sdk'),
     new Tag('ArFS', '0.13'),
     new Tag('Content-Type', 'application/json'),
-    new Tag('Drive-Id', driveId),
+    new Tag('Drive-Id', opts.driveId),
     new Tag('Entity-Type', 'file'),
-    new Tag('File-Id', fileId),
-    new Tag('Parent-Folder-Id', parentFolderId),
-    new Tag('Unix-Time', unixTime)
+    new Tag('File-Id', opts.fileId),
+    new Tag('Parent-Folder-Id', opts.parentFolderId),
+    new Tag('Unix-Time', opts.unixTime)
   ]
 }
