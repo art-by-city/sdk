@@ -22,6 +22,9 @@ export interface PublicationImageWithThumbnails {
 export interface PublicationAudio extends PublishingFile {
   type: AudioMimeTypes
 }
+export interface PublicationModel extends PublishingFile {
+  type: ModelMimeTypes
+}
 export interface BasePublicationOptions {
   type: PublicationType
   title: string
@@ -41,12 +44,13 @@ export interface ImagePublicationOptions extends BasePublicationOptions {
   images: PublicationImageWithThumbnails[]
 }
 export interface AudioPublicationOptions extends BasePublicationOptions {
-  type: 'audio',
+  type: 'audio'
   audio: PublicationAudio
   image?: PublicationImageWithThumbnails
 }
 export interface ModelPublicationOptions extends BasePublicationOptions {
   type: 'model'
+  model: PublicationModel
 }
 export interface VideoPublicationOptions extends BasePublicationOptions {
   type: 'video'
@@ -77,6 +81,10 @@ export type AudioMimeTypes =
   | 'audio/wav'
   | 'audio/ogg'
   | 'audio/webm'
+
+export type ModelMimeTypes =
+  | 'model/gltf+json'
+  | 'model/gltf+binary'
 
 export {
   default as AuthenticatedArtByCityPublications
