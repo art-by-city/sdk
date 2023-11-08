@@ -12,7 +12,9 @@ import {
   ModelPublicationOptions,
   PublicationAudio,
   PublicationImageWithThumbnails,
-  PublicationModel
+  PublicationModel,
+  PublicationVideo,
+  VideoPublicationOptions
 } from '../../dist/web/publications'
 
 /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
@@ -130,6 +132,38 @@ describe('Publications Module', () => {
         type: 'model',
         model,
         title: 'My Model Publication'
+      }
+
+      const {
+        bundleTxId,
+        primaryAssetTxId,
+        primaryMetadataTxId
+      } = await abc.connect(jwk).publications.create(opts)
+
+      console.log('bundle', bundleTxId)
+      console.log('primary asset', primaryAssetTxId)
+      console.log('primary metadata', primaryMetadataTxId)
+
+      expect(bundleTxId).to.be.a('string')
+      expect(primaryAssetTxId).to.be.a('string')
+      expect(primaryMetadataTxId).to.be.a('string')
+    })
+
+    it.only('publishes video', async function () {
+      this.timeout(0)
+      const abc = new ArtByCity(arweave, config)
+
+      const video: PublicationVideo = {
+        type: 'video/mp4',
+        data: 'mock-video',
+        size: 10,
+        name: 'my-original-video.mp4'
+      }
+
+      const opts: VideoPublicationOptions = {
+        type: 'video',
+        video,
+        title: 'My video Publication'
       }
 
       const {

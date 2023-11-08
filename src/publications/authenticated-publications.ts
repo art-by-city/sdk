@@ -74,6 +74,7 @@ export default class AuthenticatedArtByCityPublications {
       case 'model':
         return this.createModelPublication(opts, arfsOpts)
       case 'video':
+        return this.createVideoPublication(opts, arfsOpts)
       case 'text':
       default:
         throw new Error(`Publication type ${opts.type} is not yet implemented!`)
@@ -317,10 +318,7 @@ export default class AuthenticatedArtByCityPublications {
       })
     )
 
-    return {
-      audioDataItem,
-      audioMetadataDataItem
-    }
+    return { audioDataItem, audioMetadataDataItem }
   }
 
   private async createModelPublication(
@@ -413,10 +411,100 @@ export default class AuthenticatedArtByCityPublications {
       })
     )
 
+    return { modelDataItem, modelMetadataDataItem }
+  }
+
+  private async createVideoPublication(
+    opts: VideoPublicationOptions,
+    arfsOpts: ArFSOpts
+  ) {
+    const imageItems = await this.createImageDataItems(opts, arfsOpts)
+
+    const {
+      videoDataItem,
+      videoMetadataDataItem
+    } = await this.createVideoDataItems(
+      opts,
+      arfsOpts,
+      imageItems[0]?.primaryDataItem.id
+    )
+
+    const dataItems = imageItems.map(({
+      primaryDataItem,
+      primaryMetadataDataItem,
+      smallDataItem,
+      smallMetadataDataItem,
+      largeDataItem,
+      largeMetadataDataItem
+    }) => {
+      return [
+        primaryDataItem,
+        primaryMetadataDataItem,
+        smallDataItem,
+        smallMetadataDataItem,
+        largeDataItem,
+        largeMetadataDataItem
+      ]
+    }).flat()
+
+    dataItems.push(videoDataItem, videoMetadataDataItem)
+
+    const tx = await this.createPublicationBundleTransaction(dataItems)
+
     return {
-      modelDataItem,
-      modelMetadataDataItem
+      bundleTxId: tx.id,
+      primaryAssetTxId: videoDataItem.id,
+      primaryMetadataTxId: videoMetadataDataItem.id,
+      tx
     }
+  }
+
+  private async createVideoDataItems(
+    opts: VideoPublicationOptions,
+    arfsOpts: ArFSOpts,
+    thumbnailId?: string
+  ) {
+    const tags: Tag[] = [
+      new Tag('Content-Type', opts.video.type),
+      ...generateArtByCityTags(),
+      ...generateAns110Tags(opts),
+      ...generateAtomicLicenseTags(
+        this.config.contracts.atomicLicense,
+        JSON.stringify({ owner: arfsOpts.address })
+      )
+    ]
+
+    if (thumbnailId) {
+      tags.push(new Tag('Thumbnail', thumbnailId))
+    }
+
+    if (opts.slug) {
+      tags.push(new Tag('Slug', opts.slug))
+    }
+
+    const videoDataItem = await this.dataItemFactory.createAndSign(
+      opts.video.data,
+      tags
+    )
+
+    const videoMetadataDataItem = await this.dataItemFactory.createAndSign(
+      JSON.stringify({
+        name: opts.video.name,
+        size: opts.video.size,
+        lastModifiedDate: opts.video.lastModified,
+        dataTxId: videoDataItem.id,
+        dataContentType: opts.video.type,
+        title: opts.title,
+        description: opts.description
+      }),
+      generateArFSFileTags({
+        driveId: arfsOpts.driveId,
+        parentFolderId: arfsOpts.folderId,
+        unixTime: arfsOpts.unixTime
+      })
+    )
+
+    return { videoDataItem, videoMetadataDataItem }
   }
 
   private async createPublicationBundleTransaction(items: DataItem[]) {

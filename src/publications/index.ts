@@ -25,6 +25,9 @@ export interface PublicationAudio extends PublishingFile {
 export interface PublicationModel extends PublishingFile {
   type: ModelMimeTypes
 }
+export interface PublicationVideo extends PublishingFile {
+  type: VideoMimeTypes
+}
 export interface BasePublicationOptions {
   type: PublicationType
   title: string
@@ -54,6 +57,7 @@ export interface ModelPublicationOptions extends BasePublicationOptions {
 }
 export interface VideoPublicationOptions extends BasePublicationOptions {
   type: 'video'
+  video: PublicationVideo
 }
 export interface TextPublicationOptions extends BasePublicationOptions {
   type: 'text'
@@ -85,6 +89,20 @@ export type AudioMimeTypes =
 export type ModelMimeTypes =
   | 'model/gltf+json'
   | 'model/gltf+binary'
+
+export type VideoMimeTypes = 
+  | 'video/3gpp'
+  | 'video/3gpp2'
+  | 'video/mp4'
+  | 'video/mpeg'
+  | 'video/ogg'
+  | 'video/quicktime'
+  | 'video/webm'
+  | 'video/x-f4v'
+  | 'video/x-fli'
+  | 'video/x-flv'
+  | 'video/x-m4v'
+  | 'video/x-matroska'
 
 export {
   default as AuthenticatedArtByCityPublications
