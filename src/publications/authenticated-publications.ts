@@ -22,6 +22,13 @@ import {
   VideoPublicationOptions
 } from './'
 
+export interface ArFSOpts {
+  address: string
+  driveId: string
+  folderId: string
+  unixTime: string
+}
+
 export interface PublicationResult {
   bundleTxId: string
   primaryAssetTxId: string
@@ -52,13 +59,20 @@ export default class AuthenticatedArtByCityPublications {
     const { driveId, folderId } = opts.driveId && opts.folderId
       ? { driveId: opts.driveId, folderId: opts.folderId }
       : await this.arfs.getOrCreatePublicationRoot(address)
-    
+    const arfsOpts = {
+      address,
+      driveId,
+      folderId,
+      unixTime
+    }
+
     switch (opts.type) {
       case 'image':
-        return this.publishImage(address, driveId, folderId, unixTime, opts)
+        return this.createImagePublication(opts, arfsOpts)
       case 'audio':
-        return this.publishAudio(address, driveId, folderId, unixTime, opts)
+        return this.createAudioPublication(opts, arfsOpts)
       case 'model':
+        return this.createModelPublication(opts, arfsOpts)
       case 'video':
       case 'text':
       default:
@@ -66,19 +80,13 @@ export default class AuthenticatedArtByCityPublications {
     }
   }
 
-  private async publishImage(
-    address: string,
-    driveId: string,
-    folderId: string,
-    unixTime: string,
-    opts: ImagePublicationOptions
+  private async createImagePublication(
+    opts: ImagePublicationOptions,
+    arfsOpts: ArFSOpts
   ) {
     const publicationItems = await this.createImageDataItems(
       opts,
-      address,
-      driveId,
-      folderId,
-      unixTime,
+      arfsOpts,
       true
     )
 
@@ -113,10 +121,7 @@ export default class AuthenticatedArtByCityPublications {
 
   private async createImageDataItems(
     opts: PublicationOptions,
-    address: string,
-    driveId: string,
-    folderId: string,
-    unixTime: string,
+    arfsOpts: ArFSOpts,
     isPrimaryPublicationAsset?: boolean
   ) {
     const images = 'images' in opts
@@ -142,9 +147,9 @@ export default class AuthenticatedArtByCityPublications {
           dataContentType: small.type
         }),
         generateArFSFileTags({
-          driveId,
-          parentFolderId: folderId,
-          unixTime
+          driveId: arfsOpts.driveId,
+          parentFolderId: arfsOpts.folderId,
+          unixTime: arfsOpts.unixTime
         })
       )
       
@@ -164,9 +169,9 @@ export default class AuthenticatedArtByCityPublications {
           dataContentType: large.type
         }),
         generateArFSFileTags({
-          driveId,
-          parentFolderId: folderId,
-          unixTime
+          driveId: arfsOpts.driveId,
+          parentFolderId: arfsOpts.folderId,
+          unixTime: arfsOpts.unixTime
         })
       )
 
@@ -181,7 +186,7 @@ export default class AuthenticatedArtByCityPublications {
           ...generateAns110Tags(opts),
           ...generateAtomicLicenseTags(
             this.config.contracts.atomicLicense,
-            JSON.stringify({ owner: address })
+            JSON.stringify({ owner: arfsOpts.address })
           )
         )
 
@@ -205,9 +210,9 @@ export default class AuthenticatedArtByCityPublications {
           description: opts.description
         }),
         generateArFSFileTags({
-          driveId,
-          parentFolderId: folderId,
-          unixTime
+          driveId: arfsOpts.driveId,
+          parentFolderId: arfsOpts.folderId,
+          unixTime: arfsOpts.unixTime
         })
       )
 
@@ -222,30 +227,18 @@ export default class AuthenticatedArtByCityPublications {
     }))
   }
 
-  private async publishAudio(
-    address: string,
-    driveId: string,
-    folderId: string,
-    unixTime: string,
-    opts: AudioPublicationOptions
+  private async createAudioPublication(
+    opts: AudioPublicationOptions,
+    arfsOpts: ArFSOpts
   ) {
-    const imageItems = await this.createImageDataItems(
-      opts,
-      address,
-      driveId,
-      folderId,
-      unixTime
-    )
+    const imageItems = await this.createImageDataItems(opts, arfsOpts)
 
     const {
       audioDataItem,
       audioMetadataDataItem
     } = await this.createAudioDataItems(
       opts,
-      address,
-      driveId,
-      folderId,
-      unixTime,
+      arfsOpts,
       imageItems[0]?.primaryDataItem.id
     )
 
@@ -281,33 +274,30 @@ export default class AuthenticatedArtByCityPublications {
 
   private async createAudioDataItems(
     opts: AudioPublicationOptions,
-    address: string,
-    driveId: string,
-    folderId: string,
-    unixTime: string,
+    arfsOpts: ArFSOpts,
     thumbnailId?: string
   ) {
-    const audioTags: Tag[] = [
+    const tags: Tag[] = [
       new Tag('Content-Type', opts.audio.type),
       ...generateArtByCityTags(),
       ...generateAns110Tags(opts),
       ...generateAtomicLicenseTags(
         this.config.contracts.atomicLicense,
-        JSON.stringify({ owner: address })
+        JSON.stringify({ owner: arfsOpts.address })
       )
     ]
 
     if (thumbnailId) {
-      audioTags.push(new Tag('Thumbnail', thumbnailId))
+      tags.push(new Tag('Thumbnail', thumbnailId))
     }
 
     if (opts.slug) {
-      audioTags.push(new Tag('Slug', opts.slug))
+      tags.push(new Tag('Slug', opts.slug))
     }
 
     const audioDataItem = await this.dataItemFactory.createAndSign(
       opts.audio.data,
-      audioTags
+      tags
     )
 
     const audioMetadataDataItem = await this.dataItemFactory.createAndSign(
@@ -321,15 +311,111 @@ export default class AuthenticatedArtByCityPublications {
         description: opts.description
       }),
       generateArFSFileTags({
-        driveId,
-        parentFolderId: folderId,
-        unixTime
+        driveId: arfsOpts.driveId,
+        parentFolderId: arfsOpts.folderId,
+        unixTime: arfsOpts.unixTime
       })
     )
 
     return {
       audioDataItem,
       audioMetadataDataItem
+    }
+  }
+
+  private async createModelPublication(
+    opts: ModelPublicationOptions,
+    arfsOpts: ArFSOpts
+  ) {
+    const imageItems = await this.createImageDataItems(opts, arfsOpts)
+
+    const {
+      modelDataItem,
+      modelMetadataDataItem
+    } = await this.createModelDataItems(
+      opts,
+      arfsOpts,
+      imageItems[0]?.primaryDataItem.id
+    )
+
+    const dataItems = imageItems.map(({
+      primaryDataItem,
+      primaryMetadataDataItem,
+      smallDataItem,
+      smallMetadataDataItem,
+      largeDataItem,
+      largeMetadataDataItem
+    }) => {
+      return [
+        primaryDataItem,
+        primaryMetadataDataItem,
+        smallDataItem,
+        smallMetadataDataItem,
+        largeDataItem,
+        largeMetadataDataItem
+      ]
+    }).flat()
+
+    dataItems.push(modelDataItem, modelMetadataDataItem)
+
+    const tx = await this.createPublicationBundleTransaction(dataItems)
+
+    return {
+      bundleTxId: tx.id,
+      primaryAssetTxId: modelDataItem.id,
+      primaryMetadataTxId: modelMetadataDataItem.id,
+      tx
+    }
+  }
+
+  private async createModelDataItems(
+    opts: ModelPublicationOptions,
+    arfsOpts: ArFSOpts,
+    thumbnailId?: string
+  ) {
+    const tags: Tag[] = [
+      new Tag('Content-Type', opts.model.type),
+      ...generateArtByCityTags(),
+      ...generateAns110Tags(opts),
+      ...generateAtomicLicenseTags(
+        this.config.contracts.atomicLicense,
+        JSON.stringify({ owner: arfsOpts.address })
+      )
+    ]
+
+    if (thumbnailId) {
+      tags.push(new Tag('Thumbnail', thumbnailId))
+    }
+
+    if (opts.slug) {
+      tags.push(new Tag('Slug', opts.slug))
+    }
+
+    const modelDataItem = await this.dataItemFactory.createAndSign(
+      opts.model.data,
+      tags
+    )
+
+    const modelMetadataDataItem = await this.dataItemFactory.createAndSign(
+      JSON.stringify({
+        name: opts.model.name,
+        size: opts.model.size,
+        lastModifiedDate: opts.model.lastModified,
+        dataTxId: modelDataItem.id,
+        dataContentType: opts.model.type,
+        title: opts.title,
+        description: opts.description
+      }),
+      generateArFSFileTags({
+        driveId: arfsOpts.driveId,
+        parentFolderId: arfsOpts.folderId,
+        unixTime: arfsOpts.unixTime
+      })
+    )
+
+    return {
+      modelDataItem,
+      modelMetadataDataItem
     }
   }
 

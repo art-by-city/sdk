@@ -9,9 +9,11 @@ import ArtByCity, { ArtByCityConfig } from '../../dist/web'
 import {
   AudioPublicationOptions,
   ImagePublicationOptions,
+  ModelPublicationOptions,
   PublicationAudio,
-  PublicationImageWithThumbnails
-} from '../../src/publications'
+  PublicationImageWithThumbnails,
+  PublicationModel
+} from '../../dist/web/publications'
 
 /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
 const jwk: JWKInterface = TestweaveJWK
@@ -82,7 +84,7 @@ describe('Publications Module', () => {
       expect(primaryMetadataTxId).to.be.a('string')
     })
 
-    it.only('publishes audio', async function () {
+    it('publishes audio', async function () {
       this.timeout(0)
       const abc = new ArtByCity(arweave, config)
 
@@ -96,6 +98,38 @@ describe('Publications Module', () => {
         type: 'audio',
         audio,
         title: 'My Audio Publication'
+      }
+
+      const {
+        bundleTxId,
+        primaryAssetTxId,
+        primaryMetadataTxId
+      } = await abc.connect(jwk).publications.create(opts)
+
+      console.log('bundle', bundleTxId)
+      console.log('primary asset', primaryAssetTxId)
+      console.log('primary metadata', primaryMetadataTxId)
+
+      expect(bundleTxId).to.be.a('string')
+      expect(primaryAssetTxId).to.be.a('string')
+      expect(primaryMetadataTxId).to.be.a('string')
+    })
+
+    it('publishes models', async function () {
+      this.timeout(0)
+      const abc = new ArtByCity(arweave, config)
+
+      const model: PublicationModel = {
+        type: 'model/gltf+binary',
+        data: 'mock-model',
+        size: 10,
+        name: 'my-original-audio.glb'
+      }
+
+      const opts: ModelPublicationOptions = {
+        type: 'model',
+        model,
+        title: 'My Model Publication'
       }
 
       const {
