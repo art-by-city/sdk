@@ -28,6 +28,9 @@ export interface PublicationModel extends PublishingFile {
 export interface PublicationVideo extends PublishingFile {
   type: VideoMimeTypes
 }
+export interface PublicationText extends PublishingFile {
+  type: TextMimeTypes
+}
 export interface BasePublicationOptions {
   type: PublicationType
   title: string
@@ -61,6 +64,7 @@ export interface VideoPublicationOptions extends BasePublicationOptions {
 }
 export interface TextPublicationOptions extends BasePublicationOptions {
   type: 'text'
+  text: PublicationText
 }
 export type PublicationOptions =
   | ImagePublicationOptions
@@ -103,6 +107,13 @@ export type VideoMimeTypes =
   | 'video/x-flv'
   | 'video/x-m4v'
   | 'video/x-matroska'
+
+export type TextMimeTypes =
+  | 'text/plain'
+  | 'text/css'
+  | 'text/csv'
+  | 'text/html'
+  | 'text/javascript'
 
 export {
   default as AuthenticatedArtByCityPublications

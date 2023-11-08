@@ -76,8 +76,9 @@ export default class AuthenticatedArtByCityPublications {
       case 'video':
         return this.createVideoPublication(opts, arfsOpts)
       case 'text':
+        return this.createTextPublication(opts, arfsOpts)
       default:
-        throw new Error(`Publication type ${opts.type} is not yet implemented!`)
+        throw new Error(`Publication type is not yet implemented!`)
     }
   }
 
@@ -505,6 +506,99 @@ export default class AuthenticatedArtByCityPublications {
     )
 
     return { videoDataItem, videoMetadataDataItem }
+  }
+
+  private async createTextPublication(
+    opts: TextPublicationOptions,
+    arfsOpts: ArFSOpts
+  ) {
+    const imageItems = await this.createImageDataItems(opts, arfsOpts)
+
+    const {
+      textDataItem,
+      textMetadataDataItem
+    } = await this.createTextDataItems(
+      opts,
+      arfsOpts,
+      imageItems[0]?.primaryDataItem.id
+    )
+
+    const dataItems = imageItems.map(({
+      primaryDataItem,
+      primaryMetadataDataItem,
+      smallDataItem,
+      smallMetadataDataItem,
+      largeDataItem,
+      largeMetadataDataItem
+    }) => {
+      return [
+        primaryDataItem,
+        primaryMetadataDataItem,
+        smallDataItem,
+        smallMetadataDataItem,
+        largeDataItem,
+        largeMetadataDataItem
+      ]
+    }).flat()
+
+    dataItems.push(textDataItem, textMetadataDataItem)
+
+    const tx = await this.createPublicationBundleTransaction(dataItems)
+
+    return {
+      bundleTxId: tx.id,
+      primaryAssetTxId: textDataItem.id,
+      primaryMetadataTxId: textMetadataDataItem.id,
+      tx
+    }
+  }
+  
+  private async createTextDataItems(
+    opts: TextPublicationOptions,
+    arfsOpts: ArFSOpts,
+    thumbnailId?: string
+  ) {
+    const tags: Tag[] = [
+      new Tag('Content-Type', opts.text.type),
+      ...generateArtByCityTags(),
+      ...generateAns110Tags(opts),
+      ...generateAtomicLicenseTags(
+        this.config.contracts.atomicLicense,
+        JSON.stringify({ owner: arfsOpts.address })
+      )
+    ]
+
+    if (thumbnailId) {
+      tags.push(new Tag('Thumbnail', thumbnailId))
+    }
+
+    if (opts.slug) {
+      tags.push(new Tag('Slug', opts.slug))
+    }
+
+    const textDataItem = await this.dataItemFactory.createAndSign(
+      opts.text.data,
+      tags
+    )
+
+    const textMetadataDataItem = await this.dataItemFactory.createAndSign(
+      JSON.stringify({
+        name: opts.text.name,
+        size: opts.text.size,
+        lastModifiedDate: opts.text.lastModified,
+        dataTxId: textDataItem.id,
+        dataContentType: opts.text.type,
+        title: opts.title,
+        description: opts.description
+      }),
+      generateArFSFileTags({
+        driveId: arfsOpts.driveId,
+        parentFolderId: arfsOpts.folderId,
+        unixTime: arfsOpts.unixTime
+      })
+    )
+
+    return { textDataItem, textMetadataDataItem }
   }
 
   private async createPublicationBundleTransaction(items: DataItem[]) {

@@ -13,7 +13,9 @@ import {
   PublicationAudio,
   PublicationImageWithThumbnails,
   PublicationModel,
+  PublicationText,
   PublicationVideo,
+  TextPublicationOptions,
   VideoPublicationOptions
 } from '../../dist/web/publications'
 
@@ -149,7 +151,7 @@ describe('Publications Module', () => {
       expect(primaryMetadataTxId).to.be.a('string')
     })
 
-    it.only('publishes video', async function () {
+    it('publishes video', async function () {
       this.timeout(0)
       const abc = new ArtByCity(arweave, config)
 
@@ -163,7 +165,39 @@ describe('Publications Module', () => {
       const opts: VideoPublicationOptions = {
         type: 'video',
         video,
-        title: 'My video Publication'
+        title: 'My Video Publication'
+      }
+
+      const {
+        bundleTxId,
+        primaryAssetTxId,
+        primaryMetadataTxId
+      } = await abc.connect(jwk).publications.create(opts)
+
+      console.log('bundle', bundleTxId)
+      console.log('primary asset', primaryAssetTxId)
+      console.log('primary metadata', primaryMetadataTxId)
+
+      expect(bundleTxId).to.be.a('string')
+      expect(primaryAssetTxId).to.be.a('string')
+      expect(primaryMetadataTxId).to.be.a('string')
+    })
+
+    it('publishes text', async function () {
+      this.timeout(0)
+      const abc = new ArtByCity(arweave, config)
+
+      const text: PublicationText = {
+        type: 'text/plain',
+        data: 'mock-text',
+        size: 9,
+        name: 'my-original-text.txt'
+      }
+
+      const opts: TextPublicationOptions = {
+        type: 'text',
+        text,
+        title: 'My Text Publication'
       }
 
       const {
