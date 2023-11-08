@@ -5,8 +5,13 @@ import Arweave from 'arweave'
 import { JWKInterface } from 'warp-contracts'
 
 import TestweaveJWK from '../testweave-keyfile.json'
-import ArtByCity, { ArtByCityConfig } from '../../src'
-import { ImagePublicationOptions, PublicationImageWithThumbnails } from '../../src/publications'
+import ArtByCity, { ArtByCityConfig } from '../../dist/web'
+import {
+  AudioPublicationOptions,
+  ImagePublicationOptions,
+  PublicationAudio,
+  PublicationImageWithThumbnails
+} from '../../src/publications'
 
 /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
 const jwk: JWKInterface = TestweaveJWK
@@ -37,7 +42,7 @@ describe('Publications Module', () => {
       const abc = new ArtByCity(arweave, config)
 
       const image: PublicationImageWithThumbnails = {
-        original: {
+        primary: {
           type: 'image/png',
           data: 'mock-png',
           size: 8,
@@ -66,7 +71,38 @@ describe('Publications Module', () => {
         bundleTxId,
         primaryAssetTxId,
         primaryMetadataTxId
-      } = await abc.connect(jwk).publications.publish(opts)
+      } = await abc.connect(jwk).publications.create(opts)
+
+      console.log('bundle', bundleTxId)
+      console.log('primary asset', primaryAssetTxId)
+      console.log('primary metadata', primaryMetadataTxId)
+
+      expect(bundleTxId).to.be.a('string')
+      expect(primaryAssetTxId).to.be.a('string')
+      expect(primaryMetadataTxId).to.be.a('string')
+    })
+
+    it.only('publishes audio', async function () {
+      this.timeout(0)
+      const abc = new ArtByCity(arweave, config)
+
+      const audio: PublicationAudio = {
+        type: 'audio/mpeg',
+        data: 'mock-mp3',
+        size: 8,
+        name: 'my-original-audio.mp3'
+      }
+      const opts: AudioPublicationOptions = {
+        type: 'audio',
+        audio,
+        title: 'My Audio Publication'
+      }
+
+      const {
+        bundleTxId,
+        primaryAssetTxId,
+        primaryMetadataTxId
+      } = await abc.connect(jwk).publications.create(opts)
 
       console.log('bundle', bundleTxId)
       console.log('primary asset', primaryAssetTxId)

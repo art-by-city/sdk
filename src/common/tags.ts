@@ -1,4 +1,5 @@
 import { Tag } from 'warp-contracts'
+import { PublicationOptions } from '../publications'
 
 export function generateArtByCityTags() {
   return [
@@ -7,34 +8,35 @@ export function generateArtByCityTags() {
   ]
 }
 
-export type Ans110Params = {
-  title: string
-  type: string
-  description?: string
-  topics?: (string | { name: string, value: string })[]
-}
+export type Topic = { name?: string, value: string }
 
 export function generateAns110Tags(
-  { title, type, description, topics }: Ans110Params
+  opts: PublicationOptions
 ) {
   const tags = [
-    new Tag('Title', title.substring(0, 150)),
-    new Tag('Type', type)
+    new Tag('Title', opts.title.substring(0, 150)),
+    new Tag('Type', opts.type)
   ]
 
-  if (description) {
-    tags.push(new Tag('Description', description.substring(0, 300)))
+  if (opts.description) {
+    tags.push(new Tag('Description', opts.description.substring(0, 300)))
   }
 
-  if (topics) {
-    tags.push(...topics.map(topic => {
-      if (typeof topic === 'string') {
-        return new Tag('Topic', topic)
-      }
-      
-      return new Tag(`Topic:${topic.name}`, topic.value)
-    }))
+  const topics: Topic[] = []
+  if (opts.city) {
+    topics.push({ name: 'city', value: opts.city })
   }
+  if (opts.medium) {
+    topics.push({ name: 'medium', value: opts.medium })
+  }
+  if (opts.genre) {
+    topics.push({ name: 'genre', value: opts.genre })
+  }
+
+  tags.push(...topics.map(topic => topic.name
+    ? new Tag(`Topic:${topic.name}`, topic.value)
+    : new Tag('Topic', topic.value)
+  ))
 
   return tags
 }
@@ -55,4 +57,16 @@ export function generateRelatedToTags(
   }
 
   return tags
+}
+
+export function generateAtomicLicenseTags(
+  contractSrcId: string,
+  initState: string
+) {
+  return [
+    new Tag('App-Name', 'SmartWeaveContract'),
+    new Tag('App-Version', '0.3.0'),
+    new Tag('Contract-Src', contractSrcId),
+    new Tag('Init-State', initState)
+  ]
 }

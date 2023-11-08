@@ -1,3 +1,5 @@
+import { Topic } from '../common/tags'
+
 export type PublicationType = 'image' | 'audio' | 'model' | 'video' | 'text'
 export interface PublishingFile {
   data: string | Uint8Array
@@ -6,34 +8,42 @@ export interface PublishingFile {
   name: string // user defined file name with extension
   lastModified?: number // last modified timestamp in unix epoch ms
 }
-export interface OriginalImagePublishingFile extends PublishingFile {
+export interface PrimaryImagePublishingFile extends PublishingFile {
   type: ImageMimeTypes
 }
 export interface PreviewImagePublishingFile extends PublishingFile {
   type: 'image/jpeg'
 }
 export interface PublicationImageWithThumbnails {
-  original: OriginalImagePublishingFile
+  primary: PrimaryImagePublishingFile
   small: PreviewImagePublishingFile
   large: PreviewImagePublishingFile
+}
+export interface PublicationAudio extends PublishingFile {
+  type: AudioMimeTypes
 }
 export interface BasePublicationOptions {
   type: PublicationType
   title: string
   slug?: string
   description?: string
-  city?: string
-  images: PublicationImageWithThumbnails[]
-  topics?: string[]
   driveId?: string
   folderId?: string
+
+  // Topics
+  topics?: Topic[]
+  city?: string
+  medium?: string
+  genre?: string
 }
 export interface ImagePublicationOptions extends BasePublicationOptions {
   type: 'image'
-  medium?: string
+  images: PublicationImageWithThumbnails[]
 }
 export interface AudioPublicationOptions extends BasePublicationOptions {
-  type: 'audio'
+  type: 'audio',
+  audio: PublicationAudio
+  image?: PublicationImageWithThumbnails
 }
 export interface ModelPublicationOptions extends BasePublicationOptions {
   type: 'model'
@@ -59,6 +69,14 @@ export type ImageMimeTypes =
   | 'image/png'
   | 'image/svg+xml'
   | 'image/webp'
+
+export type AudioMimeTypes =
+  | 'audio/aac'
+  | 'audio/flac'
+  | 'audio/mpeg'
+  | 'audio/wav'
+  | 'audio/ogg'
+  | 'audio/webm'
 
 export {
   default as AuthenticatedArtByCityPublications
