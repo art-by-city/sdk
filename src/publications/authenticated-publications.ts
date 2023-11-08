@@ -6,7 +6,11 @@ import { InjectedArweaveSigner } from 'warp-contracts-plugin-deploy'
 
 import { AuthenticatedArFSClient, generateArFSFileTags } from '../arfs'
 import DataItemFactory from '../common/data-item'
-import { Topic, generateAns110Tags, generateArtByCityTags, generateAtomicLicenseTags } from '../common/tags'
+import {
+  generateAns110Tags,
+  generateArtByCityTags,
+  generateAtomicLicenseTags
+} from '../common/tags'
 import { ArtByCityConfig } from '../config'
 import { getAddressFromSigner } from '../util/crypto'
 import {
