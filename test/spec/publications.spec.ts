@@ -54,7 +54,7 @@ describe('Publications Module', () => {
       )
 
       const image: PublicationImageWithThumbnails = {
-        original: {
+        primary: {
           type: 'image/png',
           data: 'mock-original-image-data',
           size: 24,
@@ -82,7 +82,7 @@ describe('Publications Module', () => {
         bundleTxId,
         primaryAssetTxId,
         primaryMetadataTxId
-      } = await publisher.publish(opts)
+      } = await publisher.create(opts)
 
       expect(bundleTxId).to.be.a('string')
       expect(primaryAssetTxId).to.be.a('string')
