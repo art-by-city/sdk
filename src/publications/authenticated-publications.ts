@@ -1,51 +1,57 @@
 import { DataItem, bundleAndSignData } from 'arbundles'
 import Arweave from 'arweave'
 import { ArweaveSigner } from 'warp-arbundles'
-import { Tag, Transaction } from 'warp-contracts'
+import { Tag } from 'warp-contracts'
 import { InjectedArweaveSigner } from 'warp-contracts-plugin-deploy'
 
-import { AuthenticatedArFSClient, generateArFSFileTags } from '../arfs'
+import {
+  ArFSOpts,
+  AuthenticatedArFSClient,
+  generateArFSFileTags
+} from '../arfs'
 import DataItemFactory from '../common/data-item'
 import {
   generateAns110Tags,
   generateArtByCityTags,
-  generateAtomicLicenseTags
+  generateAtomicLicenseTags,
+  generatePrimaryAssetTags
 } from '../common/tags'
 import { ArtByCityConfig } from '../config'
 import { getAddressFromSigner } from '../util/crypto'
 import {
+  ArtByCityPublications,
   AudioPublicationOptions,
   ImagePublicationOptions,
   ModelPublicationOptions,
   PublicationOptions,
+  PublicationResult,
   TextPublicationOptions,
   VideoPublicationOptions
 } from './'
+import {
+  FileDataItemFactory,
+  ImageDataItemFactory,
+  PublicationItemFactory
+} from './publication-item'
+import { ImagePublicationItems } from './publication-item/image-item-factory'
 
-export interface ArFSOpts {
-  address: string
-  driveId: string
-  folderId: string
-  unixTime: string
-}
-
-export interface PublicationResult {
-  bundleTxId: string
-  primaryAssetTxId: string
-  primaryMetadataTxId: string
-  tx: Transaction
-}
-
-export default class AuthenticatedArtByCityPublications {
-  private readonly dataItemFactory!: DataItemFactory
+export default class AuthenticatedArtByCityPublications
+  extends ArtByCityPublications
+{
+  private readonly publicationItemFactory!: PublicationItemFactory
+  private readonly imageItemFactory!: ImageDataItemFactory
+  private readonly fileItemFactory!: FileDataItemFactory
 
   constructor(
-    private readonly config: ArtByCityConfig,
-    private readonly arweave: Arweave,
+    protected readonly arweave: Arweave,
     private readonly arfs: AuthenticatedArFSClient,
+    protected readonly config: ArtByCityConfig,    
     private readonly signer: ArweaveSigner | InjectedArweaveSigner
   ) {
-    this.dataItemFactory = new DataItemFactory(signer)
+    super(arweave, config)
+    const dataItemFactory = new DataItemFactory(signer)
+    this.publicationItemFactory = new PublicationItemFactory(dataItemFactory)
+    this.imageItemFactory = new ImageDataItemFactory(dataItemFactory)
   }
 
   async create(opts: ImagePublicationOptions): Promise<PublicationResult>
@@ -70,535 +76,112 @@ export default class AuthenticatedArtByCityPublications {
       case 'image':
         return this.createImagePublication(opts, arfsOpts)
       case 'audio':
-        return this.createAudioPublication(opts, arfsOpts)
       case 'model':
-        return this.createModelPublication(opts, arfsOpts)
       case 'video':
-        return this.createVideoPublication(opts, arfsOpts)
       case 'text':
-        return this.createTextPublication(opts, arfsOpts)
       default:
-        throw new Error(`Publication type is not yet implemented!`)
+        return this.createFilePublication(opts, arfsOpts)
+    }
+  }
+
+  private async createFilePublication(
+    opts: Exclude<PublicationOptions, ImagePublicationOptions>,
+    arfs: ArFSOpts
+  ) {
+    const dataItems: DataItem[] = []
+
+    let thumbnail: {
+      original: string,
+      small: string,
+      large: string
+    } | undefined = undefined
+    if (opts.thumbnail) {
+      const thumbnailDataItems = await this.imageItemFactory.createItems({
+        file: opts.thumbnail,
+        arfs
+      })
+      thumbnail = {
+        original: thumbnailDataItems.original.id,
+        small: thumbnailDataItems.small.id,
+        large: thumbnailDataItems.large.id
+      }
+      dataItems.push(...Object.values(thumbnailDataItems))
+    }
+
+    const primaryDataItems = await this.fileItemFactory.createItems({
+      file: opts.primary,
+      arfs,
+      thumbnail,
+      atomicAsset: {
+        title: opts.title,
+        description: opts.description,
+        tags: generatePrimaryAssetTags(
+          opts,
+          this.config.contracts.atomicLicense,
+          JSON.stringify({ owner: arfs.address })
+        )
+      }
+    })
+    dataItems.push(...Object.values(primaryDataItems))
+
+    const secondaryDataItems: DataItem[] = (await Promise.all(
+      (opts.secondary || []).map(async file =>
+        this.publicationItemFactory.createItems({
+          file,
+          arfs,
+          relatedTo: primaryDataItems.original.id
+        })
+      )
+    )).flat()
+    dataItems.push(...secondaryDataItems)
+
+    const tx = await this.createPublicationBundleTransaction(dataItems)
+
+    return {
+      bundleTxId: tx.id,
+      primaryAssetTxId: primaryDataItems.original.id,
+      primaryMetadataTxId: primaryDataItems.originalMetadata.id,
+      tx
     }
   }
 
   private async createImagePublication(
     opts: ImagePublicationOptions,
-    arfsOpts: ArFSOpts
+    arfs: ArFSOpts
   ) {
-    const publicationItems = await this.createImageDataItems(
-      opts,
-      arfsOpts,
-      true
-    )
-
-    const { primaryDataItem, primaryMetadataDataItem } = publicationItems[0]
-    const dataItems = publicationItems.map(({
-      primaryDataItem,
-      primaryMetadataDataItem,
-      smallDataItem,
-      smallMetadataDataItem,
-      largeDataItem,
-      largeMetadataDataItem
-    }) => {
-      return [
-        primaryDataItem,
-        primaryMetadataDataItem,
-        smallDataItem,
-        smallMetadataDataItem,
-        largeDataItem,
-        largeMetadataDataItem
-      ]
-    }).flat()
-
-    const tx = await this.createPublicationBundleTransaction(dataItems)
-
-    return {
-      bundleTxId: tx.id,
-      primaryAssetTxId: primaryDataItem.id,
-      primaryMetadataTxId: primaryMetadataDataItem.id,
-      tx
-    }
-  }
-
-  private async createImageDataItems(
-    opts: PublicationOptions,
-    arfsOpts: ArFSOpts,
-    isPrimaryPublicationAsset?: boolean
-  ) {
-    const images = 'images' in opts
-      ? opts.images
-      : 'image' in opts && opts.image
-        ? [ opts.image ]
-        : []
-
-    return Promise.all(images.map(async ({ primary, small, large }) => {
-      const smallDataItem = await this.dataItemFactory.createAndSign(
-        small.data,
-        [
-          new Tag('Content-Type', small.type),
-          ...generateArtByCityTags()
-        ]
-      )
-      const smallMetadataDataItem = await this.dataItemFactory.createAndSign(
-        JSON.stringify({
-          name: small.name,
-          size: small.size,
-          lastModifiedDate: small.lastModified,
-          dataTxId: smallDataItem.id,
-          dataContentType: small.type
-        }),
-        generateArFSFileTags({
-          driveId: arfsOpts.driveId,
-          parentFolderId: arfsOpts.folderId,
-          unixTime: arfsOpts.unixTime
-        })
-      )
-      
-      const largeDataItem = await this.dataItemFactory.createAndSign(
-        large.data,
-        [
-          new Tag('Content-Type', large.type),
-          ...generateArtByCityTags()
-        ]
-      )
-      const largeMetadataDataItem = await this.dataItemFactory.createAndSign(
-        JSON.stringify({
-          name: large.name,
-          size: large.size,
-          lastModifiedDate: large.lastModified,
-          dataTxId: largeDataItem.id,
-          dataContentType: large.type
-        }),
-        generateArFSFileTags({
-          driveId: arfsOpts.driveId,
-          parentFolderId: arfsOpts.folderId,
-          unixTime: arfsOpts.unixTime
-        })
-      )
-
-      const primaryTags: Tag[] = [
-        new Tag('Content-Type', primary.type),
-        new Tag('Thumbnail-Small', smallDataItem.id),
-        new Tag('Thumbnail-Large', largeDataItem.id),
-        ...generateArtByCityTags()
-      ]
-      if (isPrimaryPublicationAsset) {
-        primaryTags.push(
-          ...generateAns110Tags(opts),
-          ...generateAtomicLicenseTags(
-            this.config.contracts.atomicLicense,
-            JSON.stringify({ owner: arfsOpts.address })
-          )
+    const primaryDataItems = await this.imageItemFactory.createItems({
+      file: opts.primary,
+      arfs,
+      atomicAsset: {
+        title: opts.title,
+        description: opts.description,
+        tags: generatePrimaryAssetTags(
+          opts,
+          this.config.contracts.atomicLicense,
+          JSON.stringify({ owner: arfs.address })
         )
+      }
+    })
 
-        if (opts.slug) {
-          primaryTags.push(new Tag('Slug', opts.slug))
-        }
-      }      
-
-      const primaryDataItem = await this.dataItemFactory.createAndSign(
-        primary.data,
-        primaryTags
-      )
-      const primaryMetadataDataItem = await this.dataItemFactory.createAndSign(
-        JSON.stringify({
-          name: primary.name,
-          size: primary.size,
-          lastModifiedDate: primary.lastModified,
-          dataTxId: primaryDataItem.id,
-          dataContentType: primary.type,
-          title: opts.title,
-          description: opts.description
-        }),
-        generateArFSFileTags({
-          driveId: arfsOpts.driveId,
-          parentFolderId: arfsOpts.folderId,
-          unixTime: arfsOpts.unixTime
+    const secondaryDataItems: DataItem[] = (await Promise.all(
+      (opts.secondary || []).map(async file =>
+        this.publicationItemFactory.createItems({
+          file,
+          arfs,
+          relatedTo: primaryDataItems.original.id
         })
       )
-
-      return {
-        primaryDataItem,
-        primaryMetadataDataItem,
-        smallDataItem,
-        smallMetadataDataItem,
-        largeDataItem,
-        largeMetadataDataItem
-      }
-    }))
-  }
-
-  private async createAudioPublication(
-    opts: AudioPublicationOptions,
-    arfsOpts: ArFSOpts
-  ) {
-    const imageItems = await this.createImageDataItems(opts, arfsOpts)
-
-    const {
-      audioDataItem,
-      audioMetadataDataItem
-    } = await this.createAudioDataItems(
-      opts,
-      arfsOpts,
-      imageItems[0]?.primaryDataItem.id
-    )
-
-    const dataItems = imageItems.map(({
-      primaryDataItem,
-      primaryMetadataDataItem,
-      smallDataItem,
-      smallMetadataDataItem,
-      largeDataItem,
-      largeMetadataDataItem
-    }) => {
-      return [
-        primaryDataItem,
-        primaryMetadataDataItem,
-        smallDataItem,
-        smallMetadataDataItem,
-        largeDataItem,
-        largeMetadataDataItem
-      ]
-    }).flat()
-
-    dataItems.push(audioDataItem, audioMetadataDataItem)
-
+    )).flat()
+    
+    const dataItems = Object.values(primaryDataItems).concat(secondaryDataItems)
     const tx = await this.createPublicationBundleTransaction(dataItems)
 
     return {
       bundleTxId: tx.id,
-      primaryAssetTxId: audioDataItem.id,
-      primaryMetadataTxId: audioMetadataDataItem.id,
+      primaryAssetTxId: primaryDataItems.original.id,
+      primaryMetadataTxId: primaryDataItems.originalMetadata.id,
       tx
     }
-  }
-
-  private async createAudioDataItems(
-    opts: AudioPublicationOptions,
-    arfsOpts: ArFSOpts,
-    thumbnailId?: string
-  ) {
-    const tags: Tag[] = [
-      new Tag('Content-Type', opts.audio.type),
-      ...generateArtByCityTags(),
-      ...generateAns110Tags(opts),
-      ...generateAtomicLicenseTags(
-        this.config.contracts.atomicLicense,
-        JSON.stringify({ owner: arfsOpts.address })
-      )
-    ]
-
-    if (thumbnailId) {
-      tags.push(new Tag('Thumbnail', thumbnailId))
-    }
-
-    if (opts.slug) {
-      tags.push(new Tag('Slug', opts.slug))
-    }
-
-    const audioDataItem = await this.dataItemFactory.createAndSign(
-      opts.audio.data,
-      tags
-    )
-
-    const audioMetadataDataItem = await this.dataItemFactory.createAndSign(
-      JSON.stringify({
-        name: opts.audio.name,
-        size: opts.audio.size,
-        lastModifiedDate: opts.audio.lastModified,
-        dataTxId: audioDataItem.id,
-        dataContentType: opts.audio.type,
-        title: opts.title,
-        description: opts.description
-      }),
-      generateArFSFileTags({
-        driveId: arfsOpts.driveId,
-        parentFolderId: arfsOpts.folderId,
-        unixTime: arfsOpts.unixTime
-      })
-    )
-
-    return { audioDataItem, audioMetadataDataItem }
-  }
-
-  private async createModelPublication(
-    opts: ModelPublicationOptions,
-    arfsOpts: ArFSOpts
-  ) {
-    const imageItems = await this.createImageDataItems(opts, arfsOpts)
-
-    const {
-      modelDataItem,
-      modelMetadataDataItem
-    } = await this.createModelDataItems(
-      opts,
-      arfsOpts,
-      imageItems[0]?.primaryDataItem.id
-    )
-
-    const dataItems = imageItems.map(({
-      primaryDataItem,
-      primaryMetadataDataItem,
-      smallDataItem,
-      smallMetadataDataItem,
-      largeDataItem,
-      largeMetadataDataItem
-    }) => {
-      return [
-        primaryDataItem,
-        primaryMetadataDataItem,
-        smallDataItem,
-        smallMetadataDataItem,
-        largeDataItem,
-        largeMetadataDataItem
-      ]
-    }).flat()
-
-    dataItems.push(modelDataItem, modelMetadataDataItem)
-
-    const tx = await this.createPublicationBundleTransaction(dataItems)
-
-    return {
-      bundleTxId: tx.id,
-      primaryAssetTxId: modelDataItem.id,
-      primaryMetadataTxId: modelMetadataDataItem.id,
-      tx
-    }
-  }
-
-  private async createModelDataItems(
-    opts: ModelPublicationOptions,
-    arfsOpts: ArFSOpts,
-    thumbnailId?: string
-  ) {
-    const tags: Tag[] = [
-      new Tag('Content-Type', opts.model.type),
-      ...generateArtByCityTags(),
-      ...generateAns110Tags(opts),
-      ...generateAtomicLicenseTags(
-        this.config.contracts.atomicLicense,
-        JSON.stringify({ owner: arfsOpts.address })
-      )
-    ]
-
-    if (thumbnailId) {
-      tags.push(new Tag('Thumbnail', thumbnailId))
-    }
-
-    if (opts.slug) {
-      tags.push(new Tag('Slug', opts.slug))
-    }
-
-    const modelDataItem = await this.dataItemFactory.createAndSign(
-      opts.model.data,
-      tags
-    )
-
-    const modelMetadataDataItem = await this.dataItemFactory.createAndSign(
-      JSON.stringify({
-        name: opts.model.name,
-        size: opts.model.size,
-        lastModifiedDate: opts.model.lastModified,
-        dataTxId: modelDataItem.id,
-        dataContentType: opts.model.type,
-        title: opts.title,
-        description: opts.description
-      }),
-      generateArFSFileTags({
-        driveId: arfsOpts.driveId,
-        parentFolderId: arfsOpts.folderId,
-        unixTime: arfsOpts.unixTime
-      })
-    )
-
-    return { modelDataItem, modelMetadataDataItem }
-  }
-
-  private async createVideoPublication(
-    opts: VideoPublicationOptions,
-    arfsOpts: ArFSOpts
-  ) {
-    const imageItems = await this.createImageDataItems(opts, arfsOpts)
-
-    const {
-      videoDataItem,
-      videoMetadataDataItem
-    } = await this.createVideoDataItems(
-      opts,
-      arfsOpts,
-      imageItems[0]?.primaryDataItem.id
-    )
-
-    const dataItems = imageItems.map(({
-      primaryDataItem,
-      primaryMetadataDataItem,
-      smallDataItem,
-      smallMetadataDataItem,
-      largeDataItem,
-      largeMetadataDataItem
-    }) => {
-      return [
-        primaryDataItem,
-        primaryMetadataDataItem,
-        smallDataItem,
-        smallMetadataDataItem,
-        largeDataItem,
-        largeMetadataDataItem
-      ]
-    }).flat()
-
-    dataItems.push(videoDataItem, videoMetadataDataItem)
-
-    const tx = await this.createPublicationBundleTransaction(dataItems)
-
-    return {
-      bundleTxId: tx.id,
-      primaryAssetTxId: videoDataItem.id,
-      primaryMetadataTxId: videoMetadataDataItem.id,
-      tx
-    }
-  }
-
-  private async createVideoDataItems(
-    opts: VideoPublicationOptions,
-    arfsOpts: ArFSOpts,
-    thumbnailId?: string
-  ) {
-    const tags: Tag[] = [
-      new Tag('Content-Type', opts.video.type),
-      ...generateArtByCityTags(),
-      ...generateAns110Tags(opts),
-      ...generateAtomicLicenseTags(
-        this.config.contracts.atomicLicense,
-        JSON.stringify({ owner: arfsOpts.address })
-      )
-    ]
-
-    if (thumbnailId) {
-      tags.push(new Tag('Thumbnail', thumbnailId))
-    }
-
-    if (opts.slug) {
-      tags.push(new Tag('Slug', opts.slug))
-    }
-
-    const videoDataItem = await this.dataItemFactory.createAndSign(
-      opts.video.data,
-      tags
-    )
-
-    const videoMetadataDataItem = await this.dataItemFactory.createAndSign(
-      JSON.stringify({
-        name: opts.video.name,
-        size: opts.video.size,
-        lastModifiedDate: opts.video.lastModified,
-        dataTxId: videoDataItem.id,
-        dataContentType: opts.video.type,
-        title: opts.title,
-        description: opts.description
-      }),
-      generateArFSFileTags({
-        driveId: arfsOpts.driveId,
-        parentFolderId: arfsOpts.folderId,
-        unixTime: arfsOpts.unixTime
-      })
-    )
-
-    return { videoDataItem, videoMetadataDataItem }
-  }
-
-  private async createTextPublication(
-    opts: TextPublicationOptions,
-    arfsOpts: ArFSOpts
-  ) {
-    const imageItems = await this.createImageDataItems(opts, arfsOpts)
-
-    const {
-      textDataItem,
-      textMetadataDataItem
-    } = await this.createTextDataItems(
-      opts,
-      arfsOpts,
-      imageItems[0]?.primaryDataItem.id
-    )
-
-    const dataItems = imageItems.map(({
-      primaryDataItem,
-      primaryMetadataDataItem,
-      smallDataItem,
-      smallMetadataDataItem,
-      largeDataItem,
-      largeMetadataDataItem
-    }) => {
-      return [
-        primaryDataItem,
-        primaryMetadataDataItem,
-        smallDataItem,
-        smallMetadataDataItem,
-        largeDataItem,
-        largeMetadataDataItem
-      ]
-    }).flat()
-
-    dataItems.push(textDataItem, textMetadataDataItem)
-
-    const tx = await this.createPublicationBundleTransaction(dataItems)
-
-    return {
-      bundleTxId: tx.id,
-      primaryAssetTxId: textDataItem.id,
-      primaryMetadataTxId: textMetadataDataItem.id,
-      tx
-    }
-  }
-  
-  private async createTextDataItems(
-    opts: TextPublicationOptions,
-    arfsOpts: ArFSOpts,
-    thumbnailId?: string
-  ) {
-    const tags: Tag[] = [
-      new Tag('Content-Type', opts.text.type),
-      ...generateArtByCityTags(),
-      ...generateAns110Tags(opts),
-      ...generateAtomicLicenseTags(
-        this.config.contracts.atomicLicense,
-        JSON.stringify({ owner: arfsOpts.address })
-      )
-    ]
-
-    if (thumbnailId) {
-      tags.push(new Tag('Thumbnail', thumbnailId))
-    }
-
-    if (opts.slug) {
-      tags.push(new Tag('Slug', opts.slug))
-    }
-
-    const textDataItem = await this.dataItemFactory.createAndSign(
-      opts.text.data,
-      tags
-    )
-
-    const textMetadataDataItem = await this.dataItemFactory.createAndSign(
-      JSON.stringify({
-        name: opts.text.name,
-        size: opts.text.size,
-        lastModifiedDate: opts.text.lastModified,
-        dataTxId: textDataItem.id,
-        dataContentType: opts.text.type,
-        title: opts.title,
-        description: opts.description
-      }),
-      generateArFSFileTags({
-        driveId: arfsOpts.driveId,
-        parentFolderId: arfsOpts.folderId,
-        unixTime: arfsOpts.unixTime
-      })
-    )
-
-    return { textDataItem, textMetadataDataItem }
   }
 
   private async createPublicationBundleTransaction(items: DataItem[]) {

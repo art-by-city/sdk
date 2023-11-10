@@ -70,3 +70,23 @@ export function generateAtomicLicenseTags(
     new Tag('Init-State', initState)
   ]
 }
+
+export function generatePrimaryAssetTags(
+  opts: PublicationOptions,
+  atomicLicenseContractSrcId: string,
+  atomicLicenseInitialState: string
+) {
+  const tags = [
+    ...generateAns110Tags(opts),
+    ...generateAtomicLicenseTags(
+      atomicLicenseContractSrcId,
+      atomicLicenseInitialState
+    )
+  ]
+
+  if (opts.slug) {
+    tags.push(new Tag('Slug', opts.slug))
+  }
+
+  return tags
+}

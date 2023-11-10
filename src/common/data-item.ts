@@ -8,7 +8,7 @@ export default class DataItemFactory {
 
   async createAndSign(
     data: string | Uint8Array,
-    tags: Tag[]
+    tags?: Tag[]
   ): Promise<DataItem> {
     const dataItem = createData(data, this.signer, { tags })
     await dataItem.sign(this.signer)

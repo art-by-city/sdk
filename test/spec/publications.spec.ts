@@ -47,9 +47,9 @@ describe('Publications Module', () => {
   context('Images', () => {
     it.skip('publishes images', async () => {
       const publisher = new AuthenticatedArtByCityPublications(
-        MOCK_ABC_CONFIG,
         arweaveMock,
         new AuthenticatedArFSClient(arweaveMock, arweaveSignerMock),
+        MOCK_ABC_CONFIG,
         arweaveSignerMock
       )
 
