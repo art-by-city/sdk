@@ -10,7 +10,7 @@ import { generateArFSDriveTags, generateArFSFolderTags } from './'
 import TransactionsModule from '../common/transactions'
 
 export default class AuthenticatedArFSClient extends ArFSClient {
-  private readonly transactions!: TransactionsModule
+  declare protected readonly transactions: TransactionsModule
 
   constructor(
     arweave: Arweave,

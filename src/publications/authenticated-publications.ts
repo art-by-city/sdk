@@ -33,7 +33,6 @@ import {
   ImageDataItemFactory,
   PublicationItemFactory
 } from './publication-item'
-import { ImagePublicationItems } from './publication-item/image-item-factory'
 
 export default class AuthenticatedArtByCityPublications
   extends ArtByCityPublications
@@ -44,11 +43,11 @@ export default class AuthenticatedArtByCityPublications
 
   constructor(
     protected readonly arweave: Arweave,
-    private readonly arfs: AuthenticatedArFSClient,
+    protected readonly arfs: AuthenticatedArFSClient,
     protected readonly config: ArtByCityConfig,    
     private readonly signer: ArweaveSigner | InjectedArweaveSigner
   ) {
-    super(arweave, config)
+    super(arweave, arfs, config)
     const dataItemFactory = new DataItemFactory(signer)
     this.publicationItemFactory = new PublicationItemFactory(dataItemFactory)
     this.imageItemFactory = new ImageDataItemFactory(dataItemFactory)

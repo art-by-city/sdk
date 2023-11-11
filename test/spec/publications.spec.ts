@@ -8,7 +8,7 @@ import TestweaveJWK from '../testweave-keyfile.json'
 import {
   AuthenticatedArtByCityPublications,
   ImagePublicationOptions,
-  PublicationImageWithThumbnails
+  PublishingImage
 } from '../../src/publications'
 import { AuthenticatedArFSClient } from '../../src/arfs'
 import { ArtByCityConfig } from '../../src'
@@ -53,30 +53,27 @@ describe('Publications Module', () => {
         arweaveSignerMock
       )
 
-      const image: PublicationImageWithThumbnails = {
+      const opts: ImagePublicationOptions = {
+        type: 'image',
+        title: 'My Image Publication',
         primary: {
           type: 'image/png',
           data: 'mock-original-image-data',
           size: 24,
-          name: 'my-original-image.png'
-        },
-        small: {
-          type: 'image/jpeg',
-          data: 'mock-small-preview-data',
-          size: 23,
-          name: 'my-original-image-small.jpeg'
-        },
-        large: {
-          type: 'image/jpeg',
-          data: 'mock-large-preview-data',
-          size: 23,
-          name: 'my-original-image-large.jpeg'
+          name: 'my-original-image.png',
+          small: {
+            type: 'image/jpeg',
+            data: 'mock-small-preview-data',
+            size: 23,
+            name: 'my-original-image-small.jpeg'
+          },
+          large: {
+            type: 'image/jpeg',
+            data: 'mock-large-preview-data',
+            size: 23,
+            name: 'my-original-image-large.jpeg'
+          }
         }
-      }
-      const opts: ImagePublicationOptions = {
-        type: 'image',
-        title: 'My Image Publication',
-        images: [ image ]
       }
       const {
         bundleTxId,

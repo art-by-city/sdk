@@ -7,9 +7,12 @@ const bundlerBase = `https://node2.irys.xyz`
 
 export default class TransactionsModule {
   protected readonly ardb!: ArDB
+  private readonly gatewayRoot!: string
 
   constructor(arweave: Arweave) {
     this.ardb = new ArDB(arweave)
+    const { protocol, host, port } = arweave.api.getConfig()
+    this.gatewayRoot = `${protocol}://${host}:${port}`
   }
 
   async dispatch(data: Buffer) {
@@ -32,5 +35,19 @@ export default class TransactionsModule {
       .find() as ArdbTransaction[]
 
     return txs[0] || null
+  }
+
+  async getData<T = any>(id: string): Promise<T> {
+    const {
+      data,
+      status,
+      statusText
+    } = await axios.get<T>(`${this.gatewayRoot}/${id}`)
+
+    if (status >= 400) {
+      throw new Error(`Error fetching tx data: ${status} ${statusText}`)
+    }
+
+    return data
   }
 }
