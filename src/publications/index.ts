@@ -2,7 +2,15 @@ import { Transaction } from 'warp-contracts'
 
 import { Topic } from '../common/tags'
 
-export type PublicationType = 'image' | 'audio' | 'model' | 'video' | 'text'
+export enum PublicationTypes {
+  image = 'image',
+  audio = 'audio',
+  model = 'model',
+  video = 'video',
+  text = 'text'
+}
+
+export type PublicationType = keyof typeof PublicationTypes
 export interface PublishingFile {
   data: string | Uint8Array
   type: SupportedMimeTypes //string // mime type

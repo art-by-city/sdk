@@ -2,9 +2,10 @@ import ArDB from 'ardb'
 import ArdbTransaction from 'ardb/lib/models/transaction'
 import Arweave from 'arweave'
 
+import { ArFSClient } from '../arfs'
 import TransactionsModule from '../common/transactions'
 import { ArtByCityConfig } from '../config'
-import { ArFSClient } from '../arfs'
+import { PublicationType, PublicationTypes } from '../publications'
 
 export default class ArtByCityPublications {
   protected readonly ardb!: ArDB
@@ -22,6 +23,7 @@ export default class ArtByCityPublications {
   async query(
     limit: number | 'all' = 10,
     creator?: string | string[],
+    type: PublicationType | 'all' = 'all',
     cursor?: string
   ) {
     let query = this.ardb.search('transactions').sort('HEIGHT_DESC')
@@ -34,11 +36,15 @@ export default class ArtByCityPublications {
       query = query.cursor(cursor)
     }
 
-    // TODO -> query on ANS-110 & atomic asset tags
+    if (type === 'all') {
+      query = query.tag('Type', Object.values(PublicationTypes))
+    } else {
+      query = query.tag('Type', type)
+    }
 
     const publications = limit === 'all'
-      ? await query.findAll()
-      : await query.limit(limit).find()
+      ? await query.findAll() as ArdbTransaction[]
+      : await query.limit(limit).find() as ArdbTransaction[]
     const nextCursor = query.getCursor()
 
     return { publications, cursor: nextCursor }
@@ -48,10 +54,10 @@ export default class ArtByCityPublications {
     const tx = await this.transactions.get(publicationId)
 
     if (tx) {
-      const fileId = tx.tags.find(t => t.name === 'File-Id')?.value
+      const metadataId = tx.tags.find(t => t.name === 'Metadata-Id')?.value
 
-      if (fileId) {
-        const metadata = await this.arfs.getFileMetadata(fileId)
+      if (metadataId) {
+        const metadata = await this.arfs.getFileMetadata(metadataId)
 
         return { tx, metadata }
       }

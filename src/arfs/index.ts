@@ -50,14 +50,14 @@ export function generateArFSFolderTags(opts: {
   return tags
 }
 
-export function generateArFSFileTags(opts: ArFSOpts) {
+export function generateArFSFileTags(opts: ArFSOpts & { fileId?: string }) {
   return [
     new Tag('Client', '@artbycity/sdk'),
     new Tag('ArFS', '0.13'),
     new Tag('Content-Type', 'application/json'),
     new Tag('Drive-Id', opts.driveId),
     new Tag('Entity-Type', 'file'),
-    new Tag('File-Id', uuidv4()),
+    new Tag('File-Id', opts.fileId || uuidv4()),
     new Tag('Parent-Folder-Id', opts.folderId),
     new Tag('Unix-Time', opts.unixTime)
   ]

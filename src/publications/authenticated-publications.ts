@@ -1,21 +1,11 @@
 import { DataItem, bundleAndSignData } from 'arbundles'
 import Arweave from 'arweave'
 import { ArweaveSigner } from 'warp-arbundles'
-import { Tag } from 'warp-contracts'
 import { InjectedArweaveSigner } from 'warp-contracts-plugin-deploy'
 
-import {
-  ArFSOpts,
-  AuthenticatedArFSClient,
-  generateArFSFileTags
-} from '../arfs'
+import { ArFSOpts, AuthenticatedArFSClient } from '../arfs'
 import DataItemFactory from '../common/data-item'
-import {
-  generateAns110Tags,
-  generateArtByCityTags,
-  generateAtomicLicenseTags,
-  generatePrimaryAssetTags
-} from '../common/tags'
+import { generatePrimaryAssetTags } from '../common/tags'
 import { ArtByCityConfig } from '../config'
 import { getAddressFromSigner } from '../util/crypto'
 import {
@@ -104,6 +94,9 @@ export default class AuthenticatedArtByCityPublications
         small: thumbnailDataItems.small.id,
         large: thumbnailDataItems.large.id
       }
+      
+      /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
+      /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument */
       dataItems.push(...Object.values(thumbnailDataItems))
     }
 
@@ -173,6 +166,8 @@ export default class AuthenticatedArtByCityPublications
     )).flat()
     
     const dataItems = Object.values(primaryDataItems).concat(secondaryDataItems)
+
+    /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument */
     const tx = await this.createPublicationBundleTransaction(dataItems)
 
     return {

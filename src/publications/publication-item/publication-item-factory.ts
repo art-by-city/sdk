@@ -4,12 +4,8 @@ import { Tag } from 'warp-contracts'
 import { ArFSOpts } from '../../arfs'
 import DataItemFactory from '../../common/data-item'
 import {
-  PublishingAudio,
   PublishingFile,
   PublishingImage,
-  PublishingModel,
-  PublishingText,
-  PublishingVideo,
   isPublishingImage
 } from '../'
 import { FileDataItemFactory, ImageDataItemFactory } from './'
@@ -38,7 +34,7 @@ export default class PublicationItemFactory {
   private readonly imageItemFactory!: ImageDataItemFactory
   private readonly fileItemFactory!: FileDataItemFactory
 
-  constructor(private readonly dataItemFactory: DataItemFactory) {
+  constructor(dataItemFactory: DataItemFactory) {
     this.imageItemFactory = new ImageDataItemFactory(dataItemFactory)
   }
 
@@ -57,12 +53,18 @@ export default class PublicationItemFactory {
         arfs,
         atomicAsset
       })
-
+      
+      /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
+      /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument */
+      /* eslint-disable-next-line @typescript-eslint/no-unsafe-return */
       return Object.values(items)
     }
 
     const items = await this.fileItemFactory.createItems(opts)
 
+    /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
+    /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument */
+    /* eslint-disable-next-line @typescript-eslint/no-unsafe-return */
     return Object.values(items)
   }
 }

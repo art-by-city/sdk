@@ -3,7 +3,6 @@ import chai, { expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import sinon from 'sinon'
 import Arweave from 'arweave'
-import { Warp } from 'warp-contracts'
 import Api from 'arweave/node/lib/api'
 
 import ArtByCityLegacy from '../../src/legacy'
@@ -32,7 +31,6 @@ const MOCK_ABC_CONFIG: ArtByCityConfig = {
 }
 
 const arweaveMock = sinon.createStubInstance(Arweave)
-const warpMock = sinon.createStubInstance(Warp)
 const localApiConfig = {
   protocol: 'http',
   host: 'localhost',
@@ -54,7 +52,7 @@ describe('Legacy Module', () => {
     it('Gets addresses for development', () => {
       const environment = 'development'
       const legacy = new ArtByCityLegacy(
-        arweaveMock
+        arweaveMock,
         { ...MOCK_ABC_CONFIG, environment }
       )
   

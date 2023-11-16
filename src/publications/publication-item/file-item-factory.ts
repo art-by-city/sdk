@@ -1,4 +1,5 @@
 import { Tag } from 'warp-contracts'
+import { v4 as uuidv4 } from 'uuid'
 
 import { generateArFSFileTags } from '../../arfs'
 import DataItemFactory from '../../common/data-item'
@@ -12,8 +13,11 @@ export default class FileDataItemFactory {
   async createItems(opts: PublicationItemOptions<PublishingFile>) {
     const { ...original } = opts.file
 
+    const fileId = uuidv4()
+
     const originalTags: Tag[] = [
       new Tag('Content-Type', original.type),
+      new Tag('Metadata-Id', fileId),
       ...generateArtByCityTags()
     ]
     if (opts.thumbnail) {
@@ -42,7 +46,7 @@ export default class FileDataItemFactory {
         title: opts.atomicAsset?.title,
         description: opts.atomicAsset?.description
       }),
-      generateArFSFileTags(opts.arfs)
+      generateArFSFileTags({ ...opts.arfs, fileId })
     )
 
     return {

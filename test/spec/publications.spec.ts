@@ -7,8 +7,7 @@ import { ArweaveSigner } from 'warp-arbundles'
 import TestweaveJWK from '../testweave-keyfile.json'
 import {
   AuthenticatedArtByCityPublications,
-  ImagePublicationOptions,
-  PublishingImage
+  ImagePublicationOptions
 } from '../../src/publications'
 import { AuthenticatedArFSClient } from '../../src/arfs'
 import { ArtByCityConfig } from '../../src'
