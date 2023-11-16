@@ -2,13 +2,16 @@ import Arweave from 'arweave'
 import ArDB from 'ardb'
 import ArdbTransaction from 'ardb/lib/models/transaction'
 
+import TransactionsModule from '../common/transactions'
+import { ArFSFileMetadata } from './'
+
 export default class ArFSClient {
   private readonly ardb!: ArDB
+  protected readonly transactions!: TransactionsModule
 
-  constructor(
-    arweave: Arweave
-  ) {
+  constructor(arweave: Arweave) {
     this.ardb = new ArDB(arweave)
+    this.transactions = new TransactionsModule(arweave)
   }
 
   /**
@@ -43,5 +46,28 @@ export default class ArFSClient {
     }
 
     return null
+  }
+
+  async getFileMetadataTransaction(
+    fileId: string
+  ): Promise<ArdbTransaction | null> {
+    const txs = await this.ardb
+      .search('transactions')
+      .sort('HEIGHT_DESC')
+      .limit(1)
+      .tag('File-Id', fileId)
+      .find() as ArdbTransaction[]
+
+    return txs[0] || null
+  }
+
+  async getFileMetadata(fileId: string) {
+    const tx = await this.getFileMetadataTransaction(fileId)
+
+    if (!tx) {
+      throw new Error(`ArFS file not found: ${fileId}`)
+    }
+
+    return this.transactions.getData<ArFSFileMetadata>(tx.id)
   }
 }

@@ -10,11 +10,6 @@ import {
   AudioPublicationOptions,
   ImagePublicationOptions,
   ModelPublicationOptions,
-  PublicationAudio,
-  PublicationImageWithThumbnails,
-  PublicationModel,
-  PublicationText,
-  PublicationVideo,
   TextPublicationOptions,
   VideoPublicationOptions
 } from '../../dist/web/publications'
@@ -42,41 +37,79 @@ const config: Partial<ArtByCityConfig> = {
 }
 
 describe('Publications Module', () => {
+  context('Unauthenticated', () => {
+    context('query', () => {
+      it('queries all publications', async function () {
+        this.timeout(0)
+        const abc = new ArtByCity(arweave, config)
+
+        const {
+          publications,
+          cursor
+        } = await abc.publications.query(10, undefined, 'all')
+
+        console.log('publications', publications.map(p => p.id))
+
+        expect(publications).to.be.an('array')
+        expect(publications).to.not.be.empty
+        expect(cursor).to.be.a('string')
+      })
+    })
+
+    context('fetch', () => {
+      it('gets by publication id', async function () {
+        this.timeout(0)
+        const abc = new ArtByCity(arweave, config)
+        const publicationId = 'RYJL2-5vkYtZVd-6IgQZqJQC56VIr8VEvR3aqllKNAk'
+        
+        const pub = await abc.publications.getById(publicationId)
+
+        console.log('metadata', pub?.metadata)
+
+        expect(pub).to.not.be.null
+        expect(pub!.metadata).to.exist
+        expect(pub!.tx).to.exist
+      })
+
+      it('gets by publication slug')
+
+      it('gets by publication slug or id')
+    })
+  })
+
   context('Authenticated', () => {
-    it('publishes images', async function () {
+    it.only('publishes images', async function () {
       this.timeout(0)
       const abc = new ArtByCity(arweave, config)
-
-      const image: PublicationImageWithThumbnails = {
+      const opts: ImagePublicationOptions = {
+        type: 'image',
+        title: 'My Image Publication',
+        slug: 'my-custom-slug',
         primary: {
           type: 'image/png',
           data: 'mock-png',
           size: 8,
-          name: 'my-original-image.png'
-        },
-        small: {
-          type: 'image/jpeg',
-          data: 'mock-jpg',
-          size: 8,
-          name: 'my-original-image-small.jpeg'
-        },
-        large: {
-          type: 'image/jpeg',
-          data: 'mock-jpg',
-          size: 8,
-          name: 'my-original-image-large.jpeg'
+          name: 'my-original-image.png',
+          small: {
+            type: 'image/jpeg',
+            data: 'mock-jpg',
+            size: 8,
+            name: 'my-original-image-small.jpeg'
+          },
+          large: {
+            type: 'image/jpeg',
+            data: 'mock-jpg',
+            size: 8,
+            name: 'my-original-image-large.jpeg'
+          }
         }
-      }
-      const opts: ImagePublicationOptions = {
-        type: 'image',
-        title: 'My Image Publication',
-        images: [ image ]
       }
 
       const {
         bundleTxId,
         primaryAssetTxId,
-        primaryMetadataTxId
+        primaryMetadataTxId,
+        tx
       } = await abc.connect(jwk).publications.create(opts)
 
       console.log('bundle', bundleTxId)
@@ -86,22 +119,23 @@ describe('Publications Module', () => {
       expect(bundleTxId).to.be.a('string')
       expect(primaryAssetTxId).to.be.a('string')
       expect(primaryMetadataTxId).to.be.a('string')
+
+      const { status } = await arweave.transactions.post(tx)
+      expect(status).to.be.lessThan(400)
     })
 
     it('publishes audio', async function () {
       this.timeout(0)
       const abc = new ArtByCity(arweave, config)
-
-      const audio: PublicationAudio = {
-        type: 'audio/mpeg',
-        data: 'mock-mp3',
-        size: 8,
-        name: 'my-original-audio.mp3'
-      }
       const opts: AudioPublicationOptions = {
         type: 'audio',
-        audio,
-        title: 'My Audio Publication'
+        title: 'My Audio Publication',
+        primary: {
+          type: 'audio/mpeg',
+          data: 'mock-mp3',
+          size: 8,
+          name: 'my-original-audio.mp3'
+        }
       }
 
       const {
@@ -122,18 +156,15 @@ describe('Publications Module', () => {
     it('publishes models', async function () {
       this.timeout(0)
       const abc = new ArtByCity(arweave, config)
-
-      const model: PublicationModel = {
-        type: 'model/gltf+binary',
-        data: 'mock-model',
-        size: 10,
-        name: 'my-original-audio.glb'
-      }
-
       const opts: ModelPublicationOptions = {
         type: 'model',
-        model,
-        title: 'My Model Publication'
+        title: 'My Model Publication',
+        primary: {
+          type: 'model/gltf+binary',
+          data: 'mock-model',
+          size: 10,
+          name: 'my-original-audio.glb'
+        }
       }
 
       const {
@@ -154,18 +185,15 @@ describe('Publications Module', () => {
     it('publishes video', async function () {
       this.timeout(0)
       const abc = new ArtByCity(arweave, config)
-
-      const video: PublicationVideo = {
-        type: 'video/mp4',
-        data: 'mock-video',
-        size: 10,
-        name: 'my-original-video.mp4'
-      }
-
       const opts: VideoPublicationOptions = {
         type: 'video',
-        video,
-        title: 'My Video Publication'
+        title: 'My Video Publication',
+        primary: {
+          type: 'video/mp4',
+          data: 'mock-video',
+          size: 10,
+          name: 'my-original-video.mp4'
+        }
       }
 
       const {
@@ -186,18 +214,15 @@ describe('Publications Module', () => {
     it('publishes text', async function () {
       this.timeout(0)
       const abc = new ArtByCity(arweave, config)
-
-      const text: PublicationText = {
-        type: 'text/plain',
-        data: 'mock-text',
-        size: 9,
-        name: 'my-original-text.txt'
-      }
-
       const opts: TextPublicationOptions = {
         type: 'text',
-        text,
-        title: 'My Text Publication'
+        title: 'My Text Publication',
+        primary: {
+          type: 'text/plain',
+          data: 'mock-text',
+          size: 9,
+          name: 'my-original-text.txt'
+        }
       }
 
       const {

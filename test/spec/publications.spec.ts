@@ -7,8 +7,7 @@ import { ArweaveSigner } from 'warp-arbundles'
 import TestweaveJWK from '../testweave-keyfile.json'
 import {
   AuthenticatedArtByCityPublications,
-  ImagePublicationOptions,
-  PublicationImageWithThumbnails
+  ImagePublicationOptions
 } from '../../src/publications'
 import { AuthenticatedArFSClient } from '../../src/arfs'
 import { ArtByCityConfig } from '../../src'
@@ -47,36 +46,33 @@ describe('Publications Module', () => {
   context('Images', () => {
     it.skip('publishes images', async () => {
       const publisher = new AuthenticatedArtByCityPublications(
-        MOCK_ABC_CONFIG,
         arweaveMock,
         new AuthenticatedArFSClient(arweaveMock, arweaveSignerMock),
+        MOCK_ABC_CONFIG,
         arweaveSignerMock
       )
 
-      const image: PublicationImageWithThumbnails = {
+      const opts: ImagePublicationOptions = {
+        type: 'image',
+        title: 'My Image Publication',
         primary: {
           type: 'image/png',
           data: 'mock-original-image-data',
           size: 24,
-          name: 'my-original-image.png'
-        },
-        small: {
-          type: 'image/jpeg',
-          data: 'mock-small-preview-data',
-          size: 23,
-          name: 'my-original-image-small.jpeg'
-        },
-        large: {
-          type: 'image/jpeg',
-          data: 'mock-large-preview-data',
-          size: 23,
-          name: 'my-original-image-large.jpeg'
+          name: 'my-original-image.png',
+          small: {
+            type: 'image/jpeg',
+            data: 'mock-small-preview-data',
+            size: 23,
+            name: 'my-original-image-small.jpeg'
+          },
+          large: {
+            type: 'image/jpeg',
+            data: 'mock-large-preview-data',
+            size: 23,
+            name: 'my-original-image-large.jpeg'
+          }
         }
-      }
-      const opts: ImagePublicationOptions = {
-        type: 'image',
-        title: 'My Image Publication',
-        images: [ image ]
       }
       const {
         bundleTxId,

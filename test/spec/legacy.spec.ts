@@ -3,7 +3,6 @@ import chai, { expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import sinon from 'sinon'
 import Arweave from 'arweave'
-import { Warp } from 'warp-contracts'
 import Api from 'arweave/node/lib/api'
 
 import ArtByCityLegacy from '../../src/legacy'
@@ -32,7 +31,6 @@ const MOCK_ABC_CONFIG: ArtByCityConfig = {
 }
 
 const arweaveMock = sinon.createStubInstance(Arweave)
-const warpMock = sinon.createStubInstance(Warp)
 const localApiConfig = {
   protocol: 'http',
   host: 'localhost',
@@ -55,7 +53,6 @@ describe('Legacy Module', () => {
       const environment = 'development'
       const legacy = new ArtByCityLegacy(
         arweaveMock,
-        warpMock,
         { ...MOCK_ABC_CONFIG, environment }
       )
   
@@ -66,7 +63,6 @@ describe('Legacy Module', () => {
       const environment = 'staging'
       const legacy = new ArtByCityLegacy(
         arweaveMock,
-        warpMock,
         { ...MOCK_ABC_CONFIG, environment }
       )
   
@@ -77,7 +73,6 @@ describe('Legacy Module', () => {
       const environment = 'production'
       const legacy = new ArtByCityLegacy(
         arweaveMock,
-        warpMock,
         { ...MOCK_ABC_CONFIG, environment }
       )
   
@@ -89,7 +84,6 @@ describe('Legacy Module', () => {
     it('Populates manifest .image with first from .images', async () => {
       const legacy = new ArtByCityLegacy(
         arweaveMock,
-        warpMock,
         MOCK_ABC_CONFIG
       )
       const manifestId = 'mock-manifest-id'
@@ -117,7 +111,6 @@ describe('Legacy Module', () => {
     it('Handles legacy manifests with creator string', async () => {
       const legacy = new ArtByCityLegacy(
         arweaveMock,
-        warpMock,
         MOCK_ABC_CONFIG
       )
       const manifestId = 'mock-manifest-id'
@@ -140,7 +133,6 @@ describe('Legacy Module', () => {
     it('Handles legacy manifests with creator object', async () => {
       const legacy = new ArtByCityLegacy(
         arweaveMock,
-        warpMock,
         MOCK_ABC_CONFIG
       )
       const manifestId = 'mock-manifest-id'
@@ -163,7 +155,6 @@ describe('Legacy Module', () => {
     it('Populates images for ancient legacy dataUrl publications', async () => {
       const legacy = new ArtByCityLegacy(
         arweaveMock,
-        warpMock,
         MOCK_ABC_CONFIG
       )
       const manifestId = 'mock-manifest-id'
@@ -190,7 +181,6 @@ describe('Legacy Module', () => {
     it('Throws when fetching profile for invalid address', () => {
       const legacy = new ArtByCityLegacy(
         arweaveMock,
-        warpMock,
         MOCK_ABC_CONFIG
       )
 
@@ -206,7 +196,6 @@ describe('Legacy Module', () => {
     it('Throws when fetching avatar for invalid address', () => {
       const legacy = new ArtByCityLegacy(
         arweaveMock,
-        warpMock,
         MOCK_ABC_CONFIG
       )
 

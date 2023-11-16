@@ -1,5 +1,4 @@
 import Arweave from 'arweave'
-import { Warp } from 'warp-contracts'
 
 import { ArtByCityConfig } from '../config'
 import VerifiedCreators from './verified-creators.json'
@@ -40,7 +39,6 @@ export default class ArtByCityLegacy {
 
   constructor(
     arweave: Arweave,
-    warp: Warp,
     private readonly config: ArtByCityConfig
   ) {
     this.transactions = new LegacyTransactions(arweave, config.environment)
