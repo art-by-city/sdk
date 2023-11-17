@@ -59,8 +59,9 @@ export default class AuthenticatedArtByCityClient extends BaseArtByCityClient {
       this.signer
     )
     this.following = new AuthenticatedArtByCityFollowing(
-      this.config,
+      this.arweave,
       this.warp,
+      this.config,
       this.signer
     )
   }

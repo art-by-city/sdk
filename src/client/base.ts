@@ -41,7 +41,8 @@ export default class ArtByCity {
     this.arweave = arweave || Arweave.init({})
     this.warp = environment !== 'development'
       ? WarpFactory.forMainnet({ inMemory: true, dbLocation: '.art-by-city' })
-      : WarpFactory.forLocal()
+      /* @ts-expect-error warp type spaghetti */
+      : WarpFactory.forLocal(1984, this.arweave)
     this.warp = this.warp.use(new DeployPlugin())
     this.legacy = new ArtByCityLegacy(this.arweave, this.config)
     this.curations = new ArtByCityCurations(
@@ -60,6 +61,10 @@ export default class ArtByCity {
       this.arfs,
       this.config
     )
-    this.following = new ArtByCityFollowing(this.config, this.warp)
+    this.following = new ArtByCityFollowing(
+      this.arweave,
+      this.warp,
+      this.config
+    )
   }
 }

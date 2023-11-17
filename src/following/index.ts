@@ -9,3 +9,18 @@ export interface FollowingCreationOptions {
   tags?: { name: string, value: string }[]
   slug?: boolean | string
 }
+
+export interface FollowingContractState {
+  owner: string
+  following: string[]
+}
+
+export interface FollowInteraction {
+  function: 'follow'
+  address: string
+}
+
+export interface UnfollowInteraction {
+  function: 'unfollow'
+  address: string
+}
