@@ -77,7 +77,8 @@ describe('ArtByCity Usernames Module', () => {
           whitelist: 'bad-contract-id',
           collaborative: 'bad-contract-id',
           collaborativeWhitelist: 'bad-contract-id'
-        }
+        },
+        following: 'bad-contract-id'
       }
     })
 

@@ -17,7 +17,8 @@ export type ArtByCityConfig = {
       whitelist: string
       collaborative: string
       collaborativeWhitelist: string
-    }
+    },
+    following: string
   }
   cache: {
     type: CacheStrategy
@@ -34,7 +35,8 @@ export const DEFAULT_ARTBYCITY_CONFIG: ArtByCityConfig = {
       whitelist: 'wQyCsSM-gROX2iVUaezrfNJg-z9MJdy_FCJB5oEx8cY',
       collaborative: 'O_SmOtUfUNYf8Z8BqFao1MzBM_9Ydh8djkcDAV2u7eM',
       collaborativeWhitelist: '3M_dT7kclnFtiITTMDRKvrbfAZEWWZb05KWH6OojEWs'
-    }
+    },
+    following: 'uPPmKBhY4L4MKAaGi2pCDU30nnEo9VtMb9Sw-zSApFY'
   },
   cache: {
     type: 'memcache'
@@ -51,7 +53,8 @@ export const ARTBYCITY_STAGING_CONFIG: ArtByCityConfig = {
       whitelist: 'wQyCsSM-gROX2iVUaezrfNJg-z9MJdy_FCJB5oEx8cY',
       collaborative: 'O_SmOtUfUNYf8Z8BqFao1MzBM_9Ydh8djkcDAV2u7eM',
       collaborativeWhitelist: '3M_dT7kclnFtiITTMDRKvrbfAZEWWZb05KWH6OojEWs'
-    }
+    },
+    following: 'uPPmKBhY4L4MKAaGi2pCDU30nnEo9VtMb9Sw-zSApFY'
   },
   cache: {
     type: 'memcache'

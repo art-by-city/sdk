@@ -13,6 +13,7 @@ import { ArtByCityUsernames } from '../usernames'
 import { ArFSClient } from '../arfs'
 import TransactionsModule from '../common/transactions'
 import { ArtByCityPublications } from '../publications'
+import { ArtByCityFollowing } from '../following'
 
 export default class ArtByCity {
   public readonly arweave!: Arweave
@@ -24,6 +25,7 @@ export default class ArtByCity {
   public readonly arfs!: ArFSClient
   public readonly transactions!: TransactionsModule
   public readonly publications!: ArtByCityPublications
+  public readonly following!: ArtByCityFollowing
 
   constructor(arweave?: Arweave, config?: Partial<ArtByCityConfig>) {
     const environment = config?.environment || 'production'
@@ -58,5 +60,6 @@ export default class ArtByCity {
       this.arfs,
       this.config
     )
+    this.following = new ArtByCityFollowing(this.config, this.warp)
   }
 }
