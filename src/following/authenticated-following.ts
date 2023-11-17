@@ -5,7 +5,12 @@ import { InjectedArweaveSigner, isSigner } from 'warp-contracts-plugin-deploy'
 
 import { ArtByCityConfig } from '../config'
 import { getAddressFromSigner } from '../util/crypto'
-import { ArtByCityFollowing, FollowInteraction, FollowingCreationOptions, UnfollowInteraction } from './'
+import {
+  ArtByCityFollowing,
+  FollowInteraction,
+  FollowingCreationOptions,
+  UnfollowInteraction
+} from './'
 
 export default class AuthenticatedArtByCityFollowing
   extends ArtByCityFollowing
