@@ -23,7 +23,7 @@ export default class AuthenticatedArtByCityCurations
 {
   constructor(
     arweave: Arweave,
-    protected warp: Warp,
+    protected readonly warp: Warp,
     config: ArtByCityConfig,
     private readonly signer: ArweaveSigner | InjectedArweaveSigner
   ) {

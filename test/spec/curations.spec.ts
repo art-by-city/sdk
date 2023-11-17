@@ -28,7 +28,8 @@ const MOCK_ABC_CONFIG: ArtByCityConfig = {
       collaborative: 'mock-collaborative-curation-contract-src-id',
       collaborativeWhitelist:
         'mock-collaborative-whitelist-curation-contract-src-id'
-    }
+    },
+    following: 'mock-following-contract-src-id'
   },
   cache: {
     type: 'memcache'

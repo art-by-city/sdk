@@ -13,6 +13,7 @@ import { ArtByCityUsernames } from '../usernames'
 import { ArFSClient } from '../arfs'
 import TransactionsModule from '../common/transactions'
 import { ArtByCityPublications } from '../publications'
+import { ArtByCityFollowing } from '../following'
 
 export default class ArtByCity {
   public readonly arweave!: Arweave
@@ -24,6 +25,7 @@ export default class ArtByCity {
   public readonly arfs!: ArFSClient
   public readonly transactions!: TransactionsModule
   public readonly publications!: ArtByCityPublications
+  public readonly following!: ArtByCityFollowing
 
   constructor(arweave?: Arweave, config?: Partial<ArtByCityConfig>) {
     const environment = config?.environment || 'production'
@@ -39,7 +41,8 @@ export default class ArtByCity {
     this.arweave = arweave || Arweave.init({})
     this.warp = environment !== 'development'
       ? WarpFactory.forMainnet({ inMemory: true, dbLocation: '.art-by-city' })
-      : WarpFactory.forLocal()
+      /* @ts-expect-error warp type spaghetti */
+      : WarpFactory.forLocal(1984, this.arweave)
     this.warp = this.warp.use(new DeployPlugin())
     this.legacy = new ArtByCityLegacy(this.arweave, this.config)
     this.curations = new ArtByCityCurations(
@@ -56,6 +59,11 @@ export default class ArtByCity {
     this.publications = new ArtByCityPublications(
       this.arweave,
       this.arfs,
+      this.config
+    )
+    this.following = new ArtByCityFollowing(
+      this.arweave,
+      this.warp,
       this.config
     )
   }
