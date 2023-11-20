@@ -59,7 +59,10 @@ export default class AuthenticatedArtByCityFollowing
 
     const { contractTxId } = await this.warp.deployFromSourceTx({
       /* @ts-expect-error warp types are spaghetti */
-      wallet: this.signer instanceof ArweaveSigner ? this.signer.jwk : this.signer,
+      wallet: this.signer instanceof ArweaveSigner
+        /* @ts-expect-error gimme dat jwk */
+        ? this.signer.jwk
+        : this.signer,
       srcTxId: this.config.contracts.following,
       initState: JSON.stringify(initialState),
       tags
