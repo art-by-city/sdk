@@ -28,6 +28,11 @@ describe('ArFS Module', () => {
       api: {},
       crypto: mockNodeCryptoDriver
     })
+    arweaveApiMock.getConfig.returns({
+      protocol: 'https',
+      host: 'localhost',
+      port: 1984
+    })
   })
 
   afterEach(() => {
