@@ -13,7 +13,7 @@ import {
   CurationCreationOptions,
   CurationType,
   UnknownCurationTypeError,
-} from './'
+} from '.'
 import { generateSlug } from '../util'
 import { getAddressFromSigner } from '../util/crypto'
 import { WithRequired, assertHasValueForKey } from '../util/types'
@@ -156,12 +156,12 @@ export default class AuthenticatedArtByCityCurations
 
     const { contractTxId } = await this.warp.deployFromSourceTx({
       /* @ts-expect-error warp types are spaghetti */
-      wallet: this.signer,
+      wallet: this.signer instanceof ArweaveSigner ? this.signer.jwk : this.signer,
       srcTxId,
       initState: JSON.stringify(initialState),
       tags
     /* @ts-expect-error warp types are spaghetti */  
-    }, !isSigner(this.signer))
+    }, !isSigner(this.signer) || this.config.environment === 'development')
 
     return contractTxId
   }

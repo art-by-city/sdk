@@ -6,7 +6,7 @@ import {
 import { v4 as uuidv4 } from 'uuid'
 
 import ArFSClient from './arfs'
-import { generateArFSDriveTags, generateArFSFolderTags } from './'
+import { generateArFSDriveTags, generateArFSFolderTags } from '.'
 import TransactionsModule from '../common/transactions'
 
 export default class AuthenticatedArFSClient extends ArFSClient {

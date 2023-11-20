@@ -34,10 +34,11 @@ export default class ArtByCity {
       : DEFAULT_ARTBYCITY_CONFIG
 
     this.config = { ...defaultConfig, ...config }
-    
+
     LoggerFactory.INST.logLevel(
       environment !== 'development' ? 'fatal' : 'error'
     )
+
     this.arweave = arweave || Arweave.init({})
     this.warp = environment !== 'development'
       ? WarpFactory.forMainnet({ inMemory: true, dbLocation: '.art-by-city' })

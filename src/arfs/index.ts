@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { Tag } from 'warp-contracts'
 
 export { default as ArFSClient } from './arfs'
-export { default as AuthenticatedArFSClient } from './authenticated'
+export { default as AuthenticatedArFSClient } from './authenticated-arfs'
 
 export interface ArFSOpts {
   address: string

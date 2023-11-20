@@ -65,4 +65,6 @@ export interface CurationCreationOptions {
 }
 
 export { default as ArtByCityCurations } from './curations'
-export { default as AuthenticatedArtByCityCurations } from './authenticated'
+export {
+  default as AuthenticatedArtByCityCurations
+} from './authenticated-curations'

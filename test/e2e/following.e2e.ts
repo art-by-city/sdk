@@ -13,34 +13,34 @@ import ArtByCity, { ArtByCityConfig } from '../../dist/web'
 /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
 const testweave: JWKInterface = TestweaveJWK
 const artbycity = 'Uy2XZ7P7F4zBllF5uPdd1ih9jiQrIGvD3X8L13cc5_s'
-// const arweave = Arweave.init({
-//   protocol: 'http',
-//   host: 'localhost',
-//   port: 1984
-// })
-// const config: Partial<ArtByCityConfig> = {
-//   environment: 'development',
-//   contracts: {
-//     usernames: '-0MjbNd0EwwmnNgHefa5axa0we64kNM3BOnXITcF7n0',
-//     atomicLicense: '8i_mVmJ9RPvG9KnMEBJimgD_l_I2BEkYja67vRZBWNo',
-//     curation: {
-//       ownable: '18WFZLc9rAfNpwWKKUNDycKaLXoknfjCUq42O6IK07Q',
-//       whitelist: 'N4JmgBHUu5ZHbcgaOUsKAydcVlQTSi5L7pwvq_NPZuA',
-//       collaborative: 'KNrobEq1MzK7121Tzd-J61trXcxKZujqPQ_B3ojZeb8',
-//       collaborativeWhitelist: '06Llbzymx4RI8Y0Ygen1grv4hM7MwjmmcCdCqeU9mAI'
-//     },
-//     following: 'ed6xnpsezIXbOg5XpO5DrsvQbxdXgUzWb-hzzMJ6zp0'
-//   }
-// }
 const arweave = Arweave.init({
-  protocol: 'https',
-  host: 'arweave.net',
-  port: 443
+  protocol: 'http',
+  host: 'localhost',
+  port: 1984
 })
-const config: Partial<ArtByCityConfig> = { environment: 'production' }
+const config: Partial<ArtByCityConfig> = {
+  environment: 'development',
+  contracts: {
+    usernames: '-0MjbNd0EwwmnNgHefa5axa0we64kNM3BOnXITcF7n0',
+    atomicLicense: '8i_mVmJ9RPvG9KnMEBJimgD_l_I2BEkYja67vRZBWNo',
+    curation: {
+      ownable: '18WFZLc9rAfNpwWKKUNDycKaLXoknfjCUq42O6IK07Q',
+      whitelist: 'N4JmgBHUu5ZHbcgaOUsKAydcVlQTSi5L7pwvq_NPZuA',
+      collaborative: 'KNrobEq1MzK7121Tzd-J61trXcxKZujqPQ_B3ojZeb8',
+      collaborativeWhitelist: '06Llbzymx4RI8Y0Ygen1grv4hM7MwjmmcCdCqeU9mAI'
+    },
+    following: 'ed6xnpsezIXbOg5XpO5DrsvQbxdXgUzWb-hzzMJ6zp0'
+  }
+}
+// const arweave = Arweave.init({
+//   protocol: 'https',
+//   host: 'arweave.net',
+//   port: 443
+// })
+// const config: Partial<ArtByCityConfig> = { environment: 'production' }
 
 describe('Following Module', () => {
-  context('Authencitated', () => {
+  context('Authenticated', () => {
     it('creates following contract for signer', async function () {
       this.timeout(0)
       const abc = new ArtByCity(arweave, config)
@@ -52,14 +52,14 @@ describe('Following Module', () => {
       expect(followingId).to.be.a('string')
     })
 
-    it('gets or creates following contract for signer', async function () {
+    it.only('gets or creates following contract for signer', async function () {
       this.timeout(0)
       const jwk = await Arweave.crypto.generateJWK()
-      // const address = await getAddressFromSigner(jwk)
-      // await axios.get(
-      //   `http://localhost:1984/mint/${address}/9999999999999999999999`
-      // )
-      // await axios.get('http://localhost:1984/mine')
+      const address = await getAddressFromSigner(jwk)
+      await axios.get(
+        `http://localhost:1984/mint/${address}/9999999999999999999999`
+      )
+      await axios.get('http://localhost:1984/mine')
 
       const abc = new ArtByCity(arweave, config)
 
@@ -71,7 +71,7 @@ describe('Following Module', () => {
       console.log('followingId', followingId)
       expect(followingId).to.be.a('string')
 
-      // await axios.get('http://localhost:1984/mine')
+      await axios.get('http://localhost:1984/mine')
 
       const secondFollowingId = await abc.connect(jwk).following.getOrCreate()
 
@@ -121,7 +121,7 @@ describe('Following Module', () => {
       expect(followingContract).to.exist
     })
 
-    it.only('gets followed addresses', async function () {
+    it('gets followed addresses', async function () {
       this.timeout(0)
       const abc = new ArtByCity(arweave, config)
       const owner = 'MlV6DeOtRmakDOf6vgOBlif795tcWimgyPsYYNQ8q1Y'
