@@ -10,12 +10,15 @@ import { AuthenticatedArFSClient } from '../arfs'
 import { AuthenticatedArtByCityPublications } from '../publications'
 import BaseArtByCityClient from './base'
 import { AuthenticatedArtByCityFollowing } from '../following'
+import { AuthenticatedArtByCityProfiles } from '../profiles'
 
 export default class AuthenticatedArtByCityClient extends BaseArtByCityClient {
   declare public readonly curations: AuthenticatedArtByCityCurations
   declare public readonly arfs: AuthenticatedArFSClient
   declare public readonly publications: AuthenticatedArtByCityPublications
   declare public readonly following: AuthenticatedArtByCityFollowing
+  declare public readonly profiles: AuthenticatedArtByCityProfiles
+
   declare public readonly signer: ArweaveSigner | InjectedArweaveSigner
 
   constructor(
@@ -64,5 +67,6 @@ export default class AuthenticatedArtByCityClient extends BaseArtByCityClient {
       this.config,
       this.signer
     )
+    this.profiles = new AuthenticatedArtByCityProfiles()
   }
 }
