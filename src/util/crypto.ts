@@ -29,6 +29,11 @@ export async function getAddressFromSigner(
     signer instanceof ArweaveSigner
     || signer instanceof InjectedArweaveSigner
   ) {
+
+    if (signer instanceof InjectedArweaveSigner) {
+      await signer.setPublicKey()
+    }
+
     return getArweaveAddressFromPublicKey(signer.publicKey)
   }
 
