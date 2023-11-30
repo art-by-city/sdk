@@ -2,9 +2,15 @@ export { default as ArtByCityProfiles } from './profiles'
 export {
   default as AuthenticatedArtByCityProfiles
 } from './authenticated-profiles'
+export { default as ArweaveAccount } from './arweave-account'
+
+export interface ArweaveAccountWalletMap {
+  [chain: string]: string
+}
 
 export interface ProfileUpdateOptions {
-  handle: string
+  username?: string
+  handle?: string
   avatar?: string
   banner?: string
   name?: string
@@ -21,7 +27,11 @@ export interface ProfileUpdateOptions {
     twitch?: string
     soundcloud?: string
   },
-  wallets?: {
-    [chain: string]: string
-  }
+  wallets?: ArweaveAccountWalletMap
+}
+
+export interface ArweaveProfile {
+  avatar?: string
+  avatarURL?: string
+  banner?: string
 }

@@ -1,11 +1,15 @@
+import { bundleAndSignData, DataItem } from 'arbundles'
 import ArDB from 'ardb'
 import ArdbTransaction from 'ardb/lib/models/transaction'
 import Arweave from 'arweave'
 import axios from 'axios'
+import { ArweaveSigner, DataItem as WarpDataItem } from 'warp-arbundles'
+import { InjectedArweaveSigner } from 'warp-contracts-plugin-deploy'
 
 import { MemoryCache } from '../cache'
+import { Tag } from 'arweave/node/lib/transaction'
 
-const bundlerBase = `https://node2.irys.xyz`
+const irysNode2 = `https://node2.irys.xyz`
 
 export default class TransactionsModule {
   protected readonly ardb!: ArDB
@@ -13,21 +17,55 @@ export default class TransactionsModule {
 
   private readonly txCache = new MemoryCache<ArdbTransaction>()
 
-  constructor(arweave: Arweave, private readonly cacheEnabled: boolean = true) {
+  constructor(
+    private readonly arweave: Arweave,
+    private readonly cacheEnabled: boolean = true
+  ) {
     this.ardb = new ArDB(arweave)
     const { protocol, host, port } = arweave.api.getConfig()
     this.gatewayRoot = `${protocol}://${host}:${port}`
   }
 
-  async dispatch(data: Buffer) {
-    const { status, statusText } = await axios.post(
-      `${bundlerBase}/tx`,
-      data,
-      { headers: { 'Content-Type': 'application/octet-stream' }}
-    )
+  async dispatch(
+    item: DataItem | WarpDataItem,
+    signer?: ArweaveSigner | InjectedArweaveSigner
+  ) {
+    if (this.gatewayRoot === 'http://localhost:1984') {
+      // NB: post to arlocal
+      const bundle = await bundleAndSignData(
+        /* @ts-expect-error warp types */
+        [item],        
+        signer
+      )
 
-    if (status >= 400) {
-      throw new Error(`Error dispatching tx: ${status} ${statusText}`)
+      const tx = await this.arweave.createTransaction({
+        data: bundle.getRaw(),
+        tags: [
+          new Tag('Bundle-Format', 'binary'),
+          new Tag('Bundle-Version', '2.0.0')
+        ]
+      })
+
+      await this.arweave.transactions.sign(
+        tx,
+        signer instanceof ArweaveSigner
+          /* @ts-expect-error signer types */
+          ? this.signer.jwk
+          : 'use_wallet'
+      )
+
+      await this.arweave.transactions.post(tx)
+    } else {
+      // NB: Dispatch with irys when using mainnet
+      const { status, statusText } = await axios.post(
+        `${irysNode2}/tx`,
+        item.getRaw(),
+        { headers: { 'Content-Type': 'application/octet-stream' }}
+      )
+  
+      if (status >= 400) {
+        throw new Error(`Error dispatching tx: ${status} ${statusText}`)
+      }
     }
   }
 

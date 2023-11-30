@@ -69,6 +69,10 @@ export default class ArtByCity {
       this.warp,
       this.config
     )
-    this.profiles = new ArtByCityProfiles()
+    this.profiles = new ArtByCityProfiles(
+      this.arweave,
+      this.usernames,
+      this.config
+    )
   }
 }

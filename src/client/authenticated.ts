@@ -67,6 +67,11 @@ export default class AuthenticatedArtByCityClient extends BaseArtByCityClient {
       this.config,
       this.signer
     )
-    this.profiles = new AuthenticatedArtByCityProfiles()
+    this.profiles = new AuthenticatedArtByCityProfiles(
+      this.arweave,
+      this.usernames,
+      this.config,
+      this.signer
+    )
   }
 }

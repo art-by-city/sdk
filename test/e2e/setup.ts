@@ -1,7 +1,9 @@
 import Arweave from 'arweave'
+import axios from 'axios'
 import { JWKInterface } from 'warp-contracts'
 
 import { ArtByCityConfig } from '../../dist/web'
+import { getAddressFromSigner } from '../../dist/web/util/crypto'
 import TestweaveJWK from '../testweave-keyfile.json'
 
 /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
@@ -12,6 +14,7 @@ export const arweave = Arweave.init({
   host: 'localhost',
   port: 1984
 })
+
 export const config: Partial<ArtByCityConfig> = {
   environment: 'development',
   contracts: {
@@ -25,4 +28,25 @@ export const config: Partial<ArtByCityConfig> = {
     },
     following: 'ed6xnpsezIXbOg5XpO5DrsvQbxdXgUzWb-hzzMJ6zp0'
   }
+}
+
+export async function generateWalletWithBalance() {
+  const jwk = await Arweave.crypto.generateJWK()
+  const address = await getAddressFromSigner(jwk)
+  await axios.get(
+    `http://localhost:1984/mint/${address}/9999999999999999999999`
+  )
+  await mine()
+
+  return { jwk, address }
+}
+
+export async function mine() {
+  await axios.get('http://localhost:1984/mine')
+}
+
+export function gatewayRoot() {
+  const { protocol, host, port } = arweave.api.getConfig()
+  
+  return `${protocol}://${host}:${port}`
 }

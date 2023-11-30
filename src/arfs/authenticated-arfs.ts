@@ -84,8 +84,8 @@ export default class AuthenticatedArFSClient extends ArFSClient {
     /* @ts-expect-error warp types */
     await folderDataItem.sign(this.signer)
 
-    await this.transactions.dispatch(driveDataItem.getRaw())
-    await this.transactions.dispatch(folderDataItem.getRaw())
+    await this.transactions.dispatch(driveDataItem)
+    await this.transactions.dispatch(folderDataItem)
 
     return {
       driveId,

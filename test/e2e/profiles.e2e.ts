@@ -1,42 +1,63 @@
 /* eslint-disable */
 import('mocha') // NB: this style import makes both webpack and typescript happy
 import { expect } from 'chai'
+import axios from 'axios'
 
 import ArtByCity from '../../dist/web'
-import { arweave, config, testweave } from './setup'
+import {
+  arweave,
+  config,
+  testweave,
+  mine,
+  gatewayRoot
+} from './setup'
+import { ArweaveAccount, ProfileUpdateOptions } from '../../dist/web/profiles'
+import { getAddressFromSigner } from '../../dist/web/util/crypto'
 
 describe('Profiles Module', () => {
   context('Authenticated', () => {
     it.only('updates profile for signer', async function () {
       this.timeout(0)
       const abc = new ArtByCity(arweave, config)
+      const handle = 'testweave'
+      const bio = Math.random().toString()
 
-      const profileId = await abc
+      const txid = await abc
         .connect(testweave)
         .profiles
-        .update({
-          // TODO -> arweave-account & arprofile spec
-        })
+        .update({ handle, bio })
 
-      expect(profileId).to.be.a('string')
+      expect(txid).to.be.a('string')
 
-      // TODO -> fetch and check it
+      await mine()
+
+      const {
+        data
+      } = await axios.get<ProfileUpdateOptions>(`${gatewayRoot()}/${txid}`)
+
+      expect(data.handle).to.equal(handle)
+      expect(data.bio).to.equal(bio)
     })
 
     it('updates art by city username on profile update', async function () {
       this.timeout(0)
       const abc = new ArtByCity(arweave, config)
+      const username = 'testweave' + Math.random().toString()
+      const address = await getAddressFromSigner(testweave)
 
-      const profileId = await abc
+      const txid = await abc
         .connect(testweave)
         .profiles
-        .update({
-          // TODO -> include art by city username
-        })
+        .update({ username, handle: username })
 
-      expect(profileId).to.be.a('string')
+      expect(txid).to.be.a('string')
 
-      // TODO -> check art by city username was updated
+      await mine()
+  
+      const resolved = await abc.usernames.resolve(address)
+
+      expect(resolved.username).to.equal(username)
+      expect(resolved.address).to.equal(address)
     })
   })
 
