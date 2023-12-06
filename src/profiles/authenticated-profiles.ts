@@ -6,6 +6,7 @@ import { InjectedArweaveSigner, isSigner } from 'warp-contracts-plugin-deploy'
 import { ArtByCityProfiles, ProfileUpdateOptions } from './'
 import { ArtByCityConfig } from '../config'
 import { ArtByCityUsernames } from '../usernames'
+import { DataItem } from 'arbundles'
 
 const MAX_HANDLE_LENGTH = 32
 
@@ -59,7 +60,8 @@ export default class AuthenticatedArtByCityProfiles extends ArtByCityProfiles {
     }
 
     if (opts.username) {
-      await this.usernames
+
+      const res = await this.usernames
         .contract
         .connect(
           /* @ts-expect-error warp spaghetti */
@@ -80,6 +82,8 @@ export default class AuthenticatedArtByCityProfiles extends ArtByCityProfiles {
               || this.config.environment === 'development'
           }
         )
+
+      console.log('username write res', res)
     }
 
     const profileDataItem = createData(
@@ -88,10 +92,14 @@ export default class AuthenticatedArtByCityProfiles extends ArtByCityProfiles {
       this.signer,
       { tags }
     )
+    
     /* @ts-expect-error warp types */
     await profileDataItem.sign(this.signer)
 
-    await this.transactions.dispatch(profileDataItem, this.signer)
+    await this.transactions.dispatch(
+      profileDataItem as unknown as DataItem,
+      this.signer
+    )
 
     return profileDataItem.id
   }

@@ -16,7 +16,7 @@ import { getAddressFromSigner } from '../../dist/web/util/crypto'
 
 describe('Profiles Module', () => {
   context('Authenticated', () => {
-    it.only('updates profile for signer', async function () {
+    it('updates profile for signer', async function () {
       this.timeout(0)
       const abc = new ArtByCity(arweave, config)
       const handle = 'testweave'
@@ -39,7 +39,7 @@ describe('Profiles Module', () => {
       expect(data.bio).to.equal(bio)
     })
 
-    it('updates art by city username on profile update', async function () {
+    it.only('updates art by city username on profile update', async function () {
       this.timeout(0)
       const abc = new ArtByCity(arweave, config)
       const username = 'testweave' + Math.random().toString()
@@ -53,7 +53,11 @@ describe('Profiles Module', () => {
       expect(txid).to.be.a('string')
 
       await mine()
+      await mine()
   
+      const { cachedValue: { state } } = await abc.usernames.contract.readState()
+      console.log('usernames state', state)
+
       const resolved = await abc.usernames.resolve(address)
 
       expect(resolved.username).to.equal(username)

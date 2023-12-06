@@ -8,6 +8,8 @@ import { v4 as uuidv4 } from 'uuid'
 import ArFSClient from './arfs'
 import { generateArFSDriveTags, generateArFSFolderTags } from './'
 import TransactionsModule from '../common/transactions'
+import { DataItem } from 'arbundles'
+
 
 export default class AuthenticatedArFSClient extends ArFSClient {
   declare protected readonly transactions: TransactionsModule
@@ -84,8 +86,14 @@ export default class AuthenticatedArFSClient extends ArFSClient {
     /* @ts-expect-error warp types */
     await folderDataItem.sign(this.signer)
 
-    await this.transactions.dispatch(driveDataItem)
-    await this.transactions.dispatch(folderDataItem)
+    await this.transactions.dispatch(
+      driveDataItem as unknown as DataItem,
+      this.signer
+    )
+    await this.transactions.dispatch(
+      folderDataItem as unknown as DataItem,
+      this.signer
+    )
 
     return {
       driveId,

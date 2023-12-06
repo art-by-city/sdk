@@ -1,13 +1,12 @@
-import { bundleAndSignData, DataItem } from 'arbundles'
+import { Bundle, bundleAndSignData, DataItem } from 'arbundles'
 import ArDB from 'ardb'
 import ArdbTransaction from 'ardb/lib/models/transaction'
 import Arweave from 'arweave'
 import axios from 'axios'
-import { ArweaveSigner, DataItem as WarpDataItem } from 'warp-arbundles'
+import { ArweaveSigner } from 'warp-arbundles'
 import { InjectedArweaveSigner } from 'warp-contracts-plugin-deploy'
 
 import { MemoryCache } from '../cache'
-import { Tag } from 'arweave/node/lib/transaction'
 
 const irysNode2 = `https://node2.irys.xyz`
 
@@ -27,30 +26,32 @@ export default class TransactionsModule {
   }
 
   async dispatch(
-    item: DataItem | WarpDataItem,
-    signer?: ArweaveSigner | InjectedArweaveSigner
+    item: DataItem,
+    signer: ArweaveSigner | InjectedArweaveSigner
   ) {
+    await item.sign(signer)
+
     if (this.gatewayRoot === 'http://localhost:1984') {
       // NB: post to arlocal
       const bundle = await bundleAndSignData(
-        /* @ts-expect-error warp types */
-        [item],        
+        [item as DataItem],
         signer
       )
 
       const tx = await this.arweave.createTransaction({
-        data: bundle.getRaw(),
-        tags: [
-          new Tag('Bundle-Format', 'binary'),
-          new Tag('Bundle-Version', '2.0.0')
-        ]
+        data: bundle.getRaw()
       })
+
+      tx.addTag('Bundle-Format', 'binary')
+      tx.addTag('Bundle-Version', '2.0.0')
+      tx.addTag('Protocol', 'ArtByCity')
+      tx.addTag('Client', '@artbycity/sdk')
 
       await this.arweave.transactions.sign(
         tx,
         signer instanceof ArweaveSigner
           /* @ts-expect-error signer types */
-          ? this.signer.jwk
+          ? signer.jwk
           : 'use_wallet'
       )
 
