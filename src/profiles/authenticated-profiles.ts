@@ -60,8 +60,7 @@ export default class AuthenticatedArtByCityProfiles extends ArtByCityProfiles {
     }
 
     if (opts.username) {
-
-      const res = await this.usernames
+      await this.usernames
         .contract
         .connect(
           /* @ts-expect-error warp spaghetti */
@@ -82,8 +81,6 @@ export default class AuthenticatedArtByCityProfiles extends ArtByCityProfiles {
               || this.config.environment === 'development'
           }
         )
-
-      console.log('username write res', res)
     }
 
     const profileDataItem = createData(
