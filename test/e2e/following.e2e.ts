@@ -52,7 +52,7 @@ describe('Following Module', () => {
       expect(followingId).to.be.a('string')
     })
 
-    it.only('gets or creates following contract for signer', async function () {
+    it('gets or creates following contract for signer', async function () {
       this.timeout(0)
       const jwk = await Arweave.crypto.generateJWK()
       const address = await getAddressFromSigner(jwk)

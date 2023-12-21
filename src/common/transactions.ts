@@ -8,7 +8,7 @@ import { InjectedArweaveSigner } from 'warp-contracts-plugin-deploy'
 
 import { MemoryCache } from '../cache'
 
-const irysNode2 = `https://node2.irys.xyz`
+const bundlerNode = `https://up.arweave.net`
 
 export default class TransactionsModule {
   protected readonly ardb!: ArDB
@@ -57,9 +57,9 @@ export default class TransactionsModule {
 
       await this.arweave.transactions.post(tx)
     } else {
-      // NB: Dispatch with irys when using mainnet
+      // NB: Dispatch with bundler node when using mainnet
       const { status, statusText } = await axios.post(
-        `${irysNode2}/tx`,
+        `${bundlerNode}/tx`,
         item.getRaw(),
         { headers: { 'Content-Type': 'application/octet-stream' }}
       )
