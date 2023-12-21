@@ -1,4 +1,4 @@
-import { Bundle, bundleAndSignData, DataItem } from 'arbundles'
+import { bundleAndSignData, DataItem } from 'arbundles'
 import ArDB from 'ardb'
 import ArdbTransaction from 'ardb/lib/models/transaction'
 import Arweave from 'arweave'
@@ -34,7 +34,7 @@ export default class TransactionsModule {
     if (this.gatewayRoot === 'http://localhost:1984') {
       // NB: post to arlocal
       const bundle = await bundleAndSignData(
-        [item as DataItem],
+        [ item ],
         signer
       )
 
