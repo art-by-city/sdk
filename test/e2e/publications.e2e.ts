@@ -79,7 +79,7 @@ describe('Publications Module', () => {
   })
 
   context('Authenticated', () => {
-    it.only('publishes images', async function () {
+    it('publishes images', async function () {
       this.timeout(0)
       const abc = new ArtByCity(arweave, config)
       const opts: ImagePublicationOptions = {

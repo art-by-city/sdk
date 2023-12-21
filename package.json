@@ -81,7 +81,7 @@
     "axios": "^1.6.0",
     "buffer": "^6.0.3",
     "uuid": "^9.0.1",
-    "warp-contracts": "1.4.25",
+    "warp-contracts": "1.4.30",
     "warp-contracts-plugin-deploy": "1.0.12"
   }
 }
