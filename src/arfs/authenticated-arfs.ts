@@ -10,7 +10,6 @@ import { generateArFSDriveTags, generateArFSFolderTags } from './'
 import TransactionsModule from '../common/transactions'
 import { DataItem } from 'arbundles'
 
-
 export default class AuthenticatedArFSClient extends ArFSClient {
   declare protected readonly transactions: TransactionsModule
 
