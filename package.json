@@ -24,7 +24,8 @@
     "art-by-city",
     "permaweb",
     "publishing",
-    "art"
+    "art",
+    "curation"
   ],
   "engines": {
     "node": "~18.19.0"
