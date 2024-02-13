@@ -24,10 +24,11 @@
     "art-by-city",
     "permaweb",
     "publishing",
-    "art"
+    "art",
+    "curation"
   ],
   "engines": {
-    "node": "~18.16.0"
+    "node": "~18.19.0"
   },
   "main": "./dist/node/index.js",
   "browser": "./dist/web/index.js",
