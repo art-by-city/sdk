@@ -17,6 +17,7 @@ export default class DataItemFactory {
       // NB: ArConnect requires the above method of signing DataItem, but they
       //     fail arbundle's .isSigned() check when re-instantiated because
       //     ._id isn't set.  So we set it by assigning .rawId to itself.
+      // eslint-disable-next-line no-self-assign
       dataItem.rawId = dataItem.rawId
 
       return dataItem
