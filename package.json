@@ -58,6 +58,7 @@
     "@types/uuid": "^9.0.6",
     "@typescript-eslint/eslint-plugin": "^6.4.1",
     "@typescript-eslint/parser": "^6.4.1",
+    "arconnect": "1.0.3",
     "arlocal": "^1.1.62",
     "chai": "^4.3.8",
     "chai-as-promised": "^7.1.1",
@@ -84,5 +85,8 @@
     "uuid": "^9.0.1",
     "warp-contracts": "1.4.36",
     "warp-contracts-plugin-deploy": "1.0.13"
+  },
+  "overrides": {
+    "arconnect": "1.0.3"
   }
 }
