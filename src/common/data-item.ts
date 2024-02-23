@@ -12,8 +12,15 @@ export default class DataItemFactory {
   ): Promise<DataItem> {
     if (this.signer instanceof InjectedArweaveSigner) {
       const signed = await window.arweaveWallet.signDataItem({ data, tags })
+      const dataItem = new DataItem(Buffer.from(signed))
+      
+      // NB: ArConnect requires the above method of signing DataItem, but they
+      //     fail arbundle's .isSigned() check when re-instantiated because
+      //     ._id isn't set.  So we set it by assigning .rawId to itself.
+      // eslint-disable-next-line no-self-assign
+      dataItem.rawId = dataItem.rawId
 
-      return new DataItem(Buffer.from(signed))
+      return dataItem
     }
     
     const dataItem = createData(data, this.signer, { tags })
