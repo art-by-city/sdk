@@ -187,12 +187,6 @@ export default class AuthenticatedArtByCityPublications
     tx.addTag('Bundle-Version', '2.0.0')
     tx.addTag('Entity-Type', 'publication')
 
-    const signer = this.signer instanceof ArweaveSigner
-      /* @ts-expect-error signer types */
-      ? this.signer.jwk
-      : 'use_wallet'
-    await this.arweave.transactions.sign(tx, signer)
-
     return tx
   }
 }
