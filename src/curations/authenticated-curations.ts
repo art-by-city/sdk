@@ -1,10 +1,5 @@
 import Arweave from 'arweave'
-import { Tag, Warp } from 'warp-contracts'
-import { ArweaveSigner } from 'warp-arbundles'
-import {
-  InjectedArweaveSigner,
-  isSigner
-} from 'warp-contracts-plugin-deploy'
+import { ArweaveSigner, Tag } from 'arbundles'
 
 import { ArtByCityConfig } from '../config'
 import {
@@ -23,11 +18,15 @@ export default class AuthenticatedArtByCityCurations
 {
   constructor(
     arweave: Arweave,
-    protected readonly warp: Warp,
+    // protected readonly warp: Warp,
     config: ArtByCityConfig,
-    private readonly signer: ArweaveSigner | InjectedArweaveSigner
+    private readonly signer: ArweaveSigner //| InjectedArweaveSigner
   ) {
-    super(arweave, warp, config)
+    super(
+      arweave,
+      // warp,
+      config
+    )
   }
 
   private determineCurationSource(
@@ -119,53 +118,58 @@ export default class AuthenticatedArtByCityCurations
     assertHasValueForKey(opts, 'owner')
     const initialState = this.createInitialState(type, opts)
     
-    const tags = (opts.tags || []).map<Tag>(tag => new Tag(tag.name, tag.value))
+    const tags = (opts.tags || []).map<Tag>(
+      tag => ({ name: tag.name, value: tag.value })
+    )
 
     tags.push(
-      new Tag('Protocol', 'ArtByCity'),
-      new Tag('Contract-Name', contractName),
-      new Tag('Contract-Version', contractVersion),
+      { name: 'Protocol', value: 'ArtByCity' },
+      { name: 'Contract-Name', value: contractName },
+      { name: 'Contract-Version', value: contractVersion },
 
       // ArtByCity / ArFS Entity-Type
-      new Tag('Entity-Type', 'curation'),
+      { name: 'Entity-Type', value: 'curation' },
 
       // ANS-110 Type
-      new Tag('Type', 'curation'),
+      { name: 'Type', value: 'curation' },
 
       // ANS-110 Title
-      new Tag('Title', opts.title.substring(0, 150))
+      { name: 'Title', value: opts.title.substring(0, 150) }
     )
 
     // ANS-110 Description
     if (opts.description) {
       // NB: Description tag has a limit of 300 chars
-      tags.push(new Tag('Description', opts.description.substring(0, 300)))
+      tags.push(
+        { name: 'Description', value: opts.description.substring(0, 300) }
+      )
     }
 
     // ANS-110 Topic
     if (opts.topic) {
-      tags.push(new Tag('Topic', opts.topic))
+      tags.push({ name: 'Topic', value: opts.topic })
     }
 
     // Slug
     if (typeof opts.slug === 'undefined' || opts.slug === true) {
-      tags.push(new Tag('Slug', generateSlug(opts.title, 150)))
+      tags.push({ name: 'Slug', value: generateSlug(opts.title, 150) })
     } else if (typeof opts.slug === 'string') {
-      tags.push(new Tag('Slug', generateSlug(opts.slug, 150)))
+      tags.push({ name: 'Slug', value: generateSlug(opts.slug, 150) })
     }
 
-    const { contractTxId } = await this.warp.deployFromSourceTx({
-      /* @ts-expect-error warp types are spaghetti */
-      wallet: this.signer instanceof ArweaveSigner
-        /* @ts-expect-error gimme dat jwk */
-        ? this.signer.jwk
-        : this.signer,
-      srcTxId,
-      initState: JSON.stringify(initialState),
-      tags
-    /* @ts-expect-error warp types are spaghetti */  
-    }, !isSigner(this.signer) || this.config.environment === 'development')
+    throw new Error(
+      'This feature is being reimplemented with AO and is not yet available'
+    )
 
-    return contractTxId
+    // const { contractTxId } = await this.warp.deployFromSourceTx({
+    //   wallet: this.signer instanceof ArweaveSigner
+    //     ? this.signer.jwk
+    //     : this.signer,
+    //   srcTxId,
+    //   initState: JSON.stringify(initialState),
+    //   tags
+    // }, !isSigner(this.signer) || this.config.environment === 'development')
+
+    // return contractTxId
   }
 }

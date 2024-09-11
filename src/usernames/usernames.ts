@@ -40,24 +40,24 @@ export default class ArtByCityUsernames
   }
 
   async resolveAddressFromUsername(username: string): Promise<string | null> {
-    const {
-      cachedValue: { state: { usernames } }
-    } = await this.contract.readState()
+    // const {
+    //   cachedValue: { state: { usernames } }
+    // } = await this.contract.readState()
 
-    for (const address in usernames) {
-      if (usernames[address] === username) {
-        return address
-      }
-    }
+    // for (const address in usernames) {
+    //   if (usernames[address] === username) {
+    //     return address
+    //   }
+    // }
 
     return null
   }
 
   async resolveUsernameFromAddress(address: string): Promise<string | null> {
-    const {
-      cachedValue: { state: { usernames } }
-    } = await this.contract.readState()
+    // const {
+    //   cachedValue: { state: { usernames } }
+    // } = await this.contract.readState()
 
-    return usernames[address] || null
+    return null //usernames[address] || null
   }
 }

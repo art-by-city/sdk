@@ -1,5 +1,4 @@
 import { v4 as uuidv4 } from 'uuid'
-import { Tag } from 'warp-contracts'
 
 export { default as ArFSClient } from './arfs'
 export { default as AuthenticatedArFSClient } from './authenticated-arfs'
@@ -17,13 +16,13 @@ export function generateArFSDriveTags(opts: {
   unixTime: string
 }) {
   return [
-    new Tag('Client', '@artbycity/sdk'),
-    new Tag('ArFS', '0.13'),
-    new Tag('Content-Type', 'application/json'),
-    new Tag('Drive-Id', opts.driveId),
-    new Tag('Drive-Privacy', opts.drivePrivacy),
-    new Tag('Entity-Type', 'drive'),
-    new Tag('Unix-Time', opts.unixTime)
+    { name: 'Client', value: '@artbycity/sdk' },
+    { name: 'ArFS', value: '0.13' },
+    { name: 'Content-Type', value: 'application/json' },
+    { name: 'Drive-Id', value: opts.driveId },
+    { name: 'Drive-Privacy', value: opts.drivePrivacy },
+    { name: 'Entity-Type', value: 'drive' },
+    { name: 'Unix-Time', value: opts.unixTime }
   ]
 }
 
@@ -34,17 +33,17 @@ export function generateArFSFolderTags(opts: {
   setAsPublicationRoot?: boolean
 }) {
   const tags = [
-    new Tag('Client', '@artbycity/sdk'),
-    new Tag('ArFS', '0.13'),
-    new Tag('Content-Type', 'application/json'),
-    new Tag('Drive-Id', opts.driveId),
-    new Tag('Entity-Type', 'folder'),
-    new Tag('Folder-Id', opts.folderId),
-    new Tag('Unix-Time', opts.unixTime)
+    { name: 'Client', value: '@artbycity/sdk' },
+    { name: 'ArFS', value: '0.13' },
+    { name: 'Content-Type', value: 'application/json' },
+    { name: 'Drive-Id', value: opts.driveId },
+    { name: 'Entity-Type', value: 'folder' },
+    { name: 'Folder-Id', value: opts.folderId },
+    { name: 'Unix-Time', value: opts.unixTime }
   ]
 
   if (opts.setAsPublicationRoot) {
-    tags.push(new Tag('Folder-Type', 'publications'))
+    tags.push({ name: 'Folder-Type', value: 'publications' })
   }
 
   return tags
@@ -52,14 +51,14 @@ export function generateArFSFolderTags(opts: {
 
 export function generateArFSFileTags(opts: ArFSOpts & { fileId?: string }) {
   return [
-    new Tag('Client', '@artbycity/sdk'),
-    new Tag('ArFS', '0.13'),
-    new Tag('Content-Type', 'application/json'),
-    new Tag('Drive-Id', opts.driveId),
-    new Tag('Entity-Type', 'file'),
-    new Tag('File-Id', opts.fileId || uuidv4()),
-    new Tag('Parent-Folder-Id', opts.folderId),
-    new Tag('Unix-Time', opts.unixTime)
+    { name: 'Client', value: '@artbycity/sdk' },
+    { name: 'ArFS', value: '0.13' },
+    { name: 'Content-Type', value: 'application/json' },
+    { name: 'Drive-Id', value: opts.driveId },
+    { name: 'Entity-Type', value: 'file' },
+    { name: 'File-Id', value: opts.fileId || uuidv4() },
+    { name: 'Parent-Folder-Id', value: opts.folderId },
+    { name: 'Unix-Time', value: opts.unixTime }
   ]
 }
 

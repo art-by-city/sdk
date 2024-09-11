@@ -1,7 +1,6 @@
 import ArDB from 'ardb'
 import ArdbTransaction from 'ardb/lib/models/transaction'
 import Arweave from 'arweave'
-import { Warp } from 'warp-contracts'
 
 import TransactionsModule from '../common/transactions'
 import { ArtByCityConfig } from '../config'
@@ -13,7 +12,7 @@ export default class ArtByCityFollowing {
 
   constructor(
     protected readonly arweave: Arweave,
-    protected readonly warp: Warp,
+    // protected readonly warp: Warp,
     protected readonly config: ArtByCityConfig
   ) {
     this.ardb = new ArDB(this.arweave)
@@ -31,9 +30,9 @@ export default class ArtByCityFollowing {
 
     const tx = txs.at(0)
 
-    if (tx) {
-      return this.warp.contract<FollowingContractState>(tx.id)
-    }
+    // if (tx) {
+    //   return this.warp.contract<FollowingContractState>(tx.id)
+    // }
 
     return null
   }
@@ -41,11 +40,11 @@ export default class ArtByCityFollowing {
   async following(owner: string) {
     const contract = await this.getContract(owner)
 
-    if (contract) {
-      const { cachedValue: { state } } = await contract.readState()
+    // if (contract) {
+    //   const { cachedValue: { state } } = await contract.readState()
 
-      return state.following
-    }
+    //   return state.following
+    // }
 
     return []
   }

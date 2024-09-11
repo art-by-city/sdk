@@ -1,7 +1,5 @@
 import Arweave from 'arweave'
-import { Warp } from 'warp-contracts'
-import { ArweaveSigner } from 'warp-arbundles'
-import { InjectedArweaveSigner } from 'warp-contracts-plugin-deploy'
+import { ArweaveSigner } from 'arbundles'
 
 import { JWKInterface } from '../util/types'
 import { ArtByCityConfig } from '../config'
@@ -19,11 +17,11 @@ export default class AuthenticatedArtByCityClient extends BaseArtByCityClient {
   declare public readonly following: AuthenticatedArtByCityFollowing
   declare public readonly profiles: AuthenticatedArtByCityProfiles
 
-  declare public readonly signer: ArweaveSigner | InjectedArweaveSigner
+  declare public readonly signer: ArweaveSigner //| InjectedArweaveSigner
 
   constructor(
     public readonly arweave: Arweave,
-    public readonly warp: Warp,
+    // public readonly warp: Warp,
     public readonly config: ArtByCityConfig,
     jwk?: JWKInterface
   ) {
@@ -36,7 +34,8 @@ export default class AuthenticatedArtByCityClient extends BaseArtByCityClient {
             'an arconnect wallet is required for connect() in browser env'
           )
         }
-        this.signer = new InjectedArweaveSigner(window.arweaveWallet)
+        throw new Error('TODO -> browser signer :)')
+        // this.signer = new InjectedArweaveSigner(window.arweaveWallet)
       } else {
         this.signer = new ArweaveSigner(jwk)
       }
@@ -47,7 +46,7 @@ export default class AuthenticatedArtByCityClient extends BaseArtByCityClient {
 
     this.curations = new AuthenticatedArtByCityCurations(
       this.arweave,
-      this.warp,
+      // this.warp,
       this.config,
       this.signer
     )
@@ -63,7 +62,7 @@ export default class AuthenticatedArtByCityClient extends BaseArtByCityClient {
     )
     this.following = new AuthenticatedArtByCityFollowing(
       this.arweave,
-      this.warp,
+      // this.warp,
       this.config,
       this.signer
     )

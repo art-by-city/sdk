@@ -1,8 +1,5 @@
 import Arweave from 'arweave'
-import { ArweaveSigner, createData } from 'warp-arbundles'
-import {
-  InjectedArweaveSigner
-} from 'warp-contracts-plugin-deploy'
+import { ArweaveSigner, createData } from 'arbundles'
 import { v4 as uuidv4 } from 'uuid'
 
 import ArFSClient from './arfs'
@@ -15,7 +12,7 @@ export default class AuthenticatedArFSClient extends ArFSClient {
 
   constructor(
     arweave: Arweave,
-    private readonly signer: ArweaveSigner | InjectedArweaveSigner
+    private readonly signer: ArweaveSigner //| InjectedArweaveSigner
   ) {
     super(arweave)
     this.transactions = new TransactionsModule(arweave)
@@ -70,19 +67,17 @@ export default class AuthenticatedArFSClient extends ArFSClient {
 
     const driveDataItem = createData(
       JSON.stringify(drive),
-      /* @ts-expect-error warp types */
       this.signer,
       { tags: driveTags }
     )
-    /* @ts-expect-error warp types */
+
     await driveDataItem.sign(this.signer)
     const folderDataItem = createData(
       JSON.stringify(folder),
-      /* @ts-expect-error warp types */
       this.signer,
       { tags: folderTags }
     )
-    /* @ts-expect-error warp types */
+
     await folderDataItem.sign(this.signer)
 
     await this.transactions.dispatch(

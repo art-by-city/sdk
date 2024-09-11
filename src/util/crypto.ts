@@ -1,6 +1,5 @@
 import Arweave from 'arweave'
-import { ArweaveSigner } from 'warp-arbundles'
-import { InjectedArweaveSigner } from 'warp-contracts-plugin-deploy'
+import { ArweaveSigner } from 'arbundles'
 
 import { JWKInterface } from './types'
 
@@ -23,16 +22,18 @@ export async function getArweaveAddressFromPublicKey(
 }
 
 export async function getAddressFromSigner(
-  signer: ArweaveSigner | InjectedArweaveSigner | JWKInterface
+  signer: ArweaveSigner
+    // | InjectedArweaveSigner
+    | JWKInterface
 ): Promise<string> {
   if (
     signer instanceof ArweaveSigner
-    || signer instanceof InjectedArweaveSigner
+    // || signer instanceof InjectedArweaveSigner
   ) {
 
-    if (signer instanceof InjectedArweaveSigner) {
-      await signer.setPublicKey()
-    }
+    // if (signer instanceof InjectedArweaveSigner) {
+    //   await signer.setPublicKey()
+    // }
 
     return getArweaveAddressFromPublicKey(signer.publicKey)
   }

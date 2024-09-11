@@ -6,7 +6,7 @@ export default class ArtByCity extends BaseArtByCityClient {
   connect(wallet?: JWKInterface): AuthenticatedArtByCityClient {
     return new AuthenticatedArtByCityClient(
       this.arweave,
-      this.warp,
+      // this.warp,
       this.config,
       wallet
     )

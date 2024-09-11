@@ -1,4 +1,4 @@
-import { Transaction } from 'warp-contracts'
+import { Transaction } from 'arbundles'
 
 import { Topic } from '../common/tags'
 
@@ -174,7 +174,6 @@ export type SupportedMimeTypes =
   | TextMimeTypes
 
 export interface PublicationResult {
-  bundleTxId: string
   primaryAssetTxId: string
   primaryMetadataTxId: string
   tx: Transaction

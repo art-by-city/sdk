@@ -1,7 +1,5 @@
 import Arweave from 'arweave'
-import { ArweaveSigner, createData } from 'warp-arbundles'
-import { Tag } from 'warp-contracts'
-import { InjectedArweaveSigner, isSigner } from 'warp-contracts-plugin-deploy'
+import { ArweaveSigner, createData } from 'arbundles'
 
 import { ArtByCityProfiles, ProfileUpdateOptions } from './'
 import { ArtByCityConfig } from '../config'
@@ -15,7 +13,7 @@ export default class AuthenticatedArtByCityProfiles extends ArtByCityProfiles {
     protected readonly arweave: Arweave,
     protected readonly usernames: ArtByCityUsernames,
     protected readonly config: ArtByCityConfig,
-    private readonly signer: ArweaveSigner | InjectedArweaveSigner
+    private readonly signer: ArweaveSigner //| InjectedArweaveSigner
   ) {
     super(arweave, usernames, config)
   }
@@ -48,49 +46,46 @@ export default class AuthenticatedArtByCityProfiles extends ArtByCityProfiles {
     }
 
     const tags = [
-      new Tag('Protocol-Name', 'Account-0.2'),
-      new Tag('Content-Type', 'application/json'),
-      new Tag('Client', '@artbycity/sdk'),
-      new Tag('Protocol', 'ArtByCity'),
-      new Tag('Entity-Type', 'profile'),
+      { name: 'Protocol-Name', value: 'Account-0.2' },
+      { name: 'Content-Type', value: 'application/json' },
+      { name: 'Client', value: '@artbycity/sdk' },
+      { name: 'Protocol', value: 'ArtByCity' },
+      { name: 'Entity-Type', value: 'profile' },
     ]
 
     if (opts.handle) {
-      tags.push(new Tag('Handle', opts.handle))
+      tags.push({ name: 'Handle', value: opts.handle })
     }
 
     if (opts.username) {
-      await this.usernames
-        .contract
-        .connect(
-          /* @ts-expect-error warp spaghetti */
-          this.signer instanceof ArweaveSigner
-            /* @ts-expect-error you will give me the jwk or else, machine */
-            ? this.signer.jwk
-            : this.signer
-        )
-        .writeInteraction(
-          {
-            function: 'register',
-            username: opts.username
-          },
-          {
-            disableBundling:
-              /* @ts-expect-error Spaghetti Western by Primus */
-              !isSigner(this.signer)
-              || this.config.environment === 'development'
-          }
-        )
+      // await this.usernames
+      //   .contract
+      //   .connect(
+      //     this.signer instanceof ArweaveSigner
+      //       /* @ts-expect-error you will give me the jwk or else, machine */
+      //       ? this.signer.jwk
+      //       : this.signer
+      //   )
+      //   .writeInteraction(
+      //     {
+      //       function: 'register',
+      //       username: opts.username
+      //     },
+      //     {
+      //       disableBundling:
+      //         /* @ts-expect-error Spaghetti Western by Primus */
+      //         !isSigner(this.signer)
+      //         || this.config.environment === 'development'
+      //     }
+      //   )
     }
 
     const profileDataItem = createData(
       JSON.stringify(opts),
-      /* @ts-expect-error warp types */
       this.signer,
       { tags }
     )
     
-    /* @ts-expect-error warp types */
     await profileDataItem.sign(this.signer)
 
     await this.transactions.dispatch(

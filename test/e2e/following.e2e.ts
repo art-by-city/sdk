@@ -2,7 +2,7 @@
 import('mocha') // NB: this style import makes both webpack and typescript happy
 import { expect } from 'chai'
 import Arweave from 'arweave'
-import { JWKInterface } from 'warp-contracts'
+import { JWKInterface } from 'arweave/node/lib/wallet'
 import axios from 'axios'
 import ArLocal from 'arlocal'
 
@@ -116,7 +116,7 @@ describe('Following Module', () => {
 
       const followingContract = await abc.following.getContract(address)
 
-      console.log('followingId', followingContract?.txId())
+      // console.log('followingId', followingContract?.txId())
 
       expect(followingContract).to.exist
     })

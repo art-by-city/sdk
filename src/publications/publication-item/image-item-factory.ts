@@ -1,5 +1,4 @@
-import { DataItem } from 'arbundles'
-import { Tag } from 'warp-contracts'
+import { DataItem, Tag } from 'arbundles'
 import { v4 as uuidv4 } from 'uuid'
 
 import { generateArFSFileTags } from '../../arfs'
@@ -29,7 +28,7 @@ export default class ImageDataItemFactory {
     const smallDataItem = await this.dataItemFactory.createAndSign(
       small.data,
       [
-        new Tag('Content-Type', small.type),
+        { name: 'Content-Type', value: small.type },
         ...generateArtByCityTags()
       ]
     )
@@ -48,7 +47,7 @@ export default class ImageDataItemFactory {
     const largeDataItem = await this.dataItemFactory.createAndSign(
       large.data,
       [
-        new Tag('Content-Type', large.type),
+        { name: 'Content-Type', value: large.type },
         ...generateArtByCityTags()
       ]
     )
@@ -65,10 +64,10 @@ export default class ImageDataItemFactory {
 
     const fileId = uuidv4()
     const originalTags: Tag[] = [
-      new Tag('Content-Type', original.type),
-      new Tag('Thumbnail-Small', smallDataItem.id),
-      new Tag('Thumbnail-Large', largeDataItem.id),
-      new Tag('Metadata-Id', fileId),
+      { name: 'Content-Type', value: original.type },
+      { name: 'Thumbnail-Small', value: smallDataItem.id },
+      { name: 'Thumbnail-Large', value: largeDataItem.id },
+      { name: 'Metadata-Id', value: fileId },
       ...generateArtByCityTags()
     ]
     if (opts.atomicAsset?.tags) {

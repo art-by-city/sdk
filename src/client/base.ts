@@ -1,6 +1,4 @@
 import Arweave from 'arweave'
-import { LoggerFactory, Warp, WarpFactory } from 'warp-contracts'
-import { DeployPlugin } from 'warp-contracts-plugin-deploy'
 
 import ArtByCityLegacy from '../legacy'
 import {
@@ -18,7 +16,7 @@ import { ArtByCityProfiles } from '../profiles'
 
 export default class ArtByCity {
   public readonly arweave!: Arweave
-  public readonly warp!: Warp
+  // public readonly warp!: Warp
   public readonly legacy!: ArtByCityLegacy
   public readonly config!: ArtByCityConfig
   public readonly curations!: ArtByCityCurations
@@ -37,24 +35,24 @@ export default class ArtByCity {
 
     this.config = { ...defaultConfig, ...config }
 
-    LoggerFactory.INST.logLevel(
-      environment !== 'development' ? 'fatal' : 'error'
-    )
+    // LoggerFactory.INST.logLevel(
+    //   environment !== 'development' ? 'fatal' : 'error'
+    // )
 
     this.arweave = arweave || Arweave.init({})
-    this.warp = environment !== 'development'
-      ? WarpFactory.forMainnet({ inMemory: true, dbLocation: '.art-by-city' })
-      /* @ts-expect-error warp type spaghetti */
-      : WarpFactory.forLocal(1984, this.arweave)
-    this.warp = this.warp.use(new DeployPlugin())
+    // this.warp = environment !== 'development'
+    //   ? WarpFactory.forMainnet({ inMemory: true, dbLocation: '.art-by-city' })
+    //   /* @ts-expect-error warp type spaghetti */
+    //   : WarpFactory.forLocal(1984, this.arweave)
+    // this.warp = this.warp.use(new DeployPlugin())
     this.legacy = new ArtByCityLegacy(this.arweave, this.config)
     this.curations = new ArtByCityCurations(
       this.arweave,
-      this.warp,
+      // this.warp,
       this.config
     )
     this.usernames = new ArtByCityUsernames(
-      this.warp,
+      // this.warp,
       this.config.contracts.usernames
     )
     this.arfs = new ArFSClient(this.arweave)
@@ -66,7 +64,7 @@ export default class ArtByCity {
     )
     this.following = new ArtByCityFollowing(
       this.arweave,
-      this.warp,
+      // this.warp,
       this.config
     )
     this.profiles = new ArtByCityProfiles(

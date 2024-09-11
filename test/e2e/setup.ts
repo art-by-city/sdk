@@ -1,6 +1,6 @@
 import Arweave from 'arweave'
 import axios from 'axios'
-import { JWKInterface } from 'warp-contracts'
+import { JWKInterface } from 'arweave/node/lib/wallet'
 
 import { ArtByCityConfig } from '../../dist/web'
 import { getAddressFromSigner } from '../../dist/web/util/crypto'

@@ -51,7 +51,7 @@ const config: Partial<ArtByCityConfig> = {
     type: 'disabled' // 'memcache' | 'disabled'
   }
 }
-const abc = new ArtByCity(arweave)
+const abc = new ArtByCity(arweave, config)
 ```
 
 #### Authenticated Client

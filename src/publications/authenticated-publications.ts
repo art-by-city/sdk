@@ -1,7 +1,6 @@
 import { DataItem, bundleAndSignData } from 'arbundles'
 import Arweave from 'arweave'
-import { ArweaveSigner } from 'warp-arbundles'
-import { InjectedArweaveSigner } from 'warp-contracts-plugin-deploy'
+import { ArweaveSigner } from 'arbundles'
 
 import { ArFSOpts, AuthenticatedArFSClient } from '../arfs'
 import DataItemFactory from '../common/data-item'
@@ -35,12 +34,13 @@ export default class AuthenticatedArtByCityPublications
     protected readonly arweave: Arweave,
     protected readonly arfs: AuthenticatedArFSClient,
     protected readonly config: ArtByCityConfig,    
-    private readonly signer: ArweaveSigner | InjectedArweaveSigner
+    private readonly signer: ArweaveSigner //| InjectedArweaveSigner
   ) {
     super(arweave, arfs, config)
     const dataItemFactory = new DataItemFactory(signer)
     this.publicationItemFactory = new PublicationItemFactory(dataItemFactory)
     this.imageItemFactory = new ImageDataItemFactory(dataItemFactory)
+    this.fileItemFactory = new FileDataItemFactory(dataItemFactory)
   }
 
   async create(opts: ImagePublicationOptions): Promise<PublicationResult>
@@ -51,6 +51,7 @@ export default class AuthenticatedArtByCityPublications
   async create(opts: PublicationOptions): Promise<PublicationResult> {
     const unixTime = (Date.now() / 1000).toString()
     const address = await getAddressFromSigner(this.signer)
+
     const { driveId, folderId } = opts.driveId && opts.folderId
       ? { driveId: opts.driveId, folderId: opts.folderId }
       : await this.arfs.getOrCreatePublicationRoot(address)
@@ -130,7 +131,6 @@ export default class AuthenticatedArtByCityPublications
     const tx = await this.createPublicationBundleTransaction(dataItems)
 
     return {
-      bundleTxId: tx.id,
       primaryAssetTxId: primaryDataItems.original.id,
       primaryMetadataTxId: primaryDataItems.originalMetadata.id,
       tx
@@ -167,11 +167,9 @@ export default class AuthenticatedArtByCityPublications
     
     const dataItems = Object.values(primaryDataItems).concat(secondaryDataItems)
 
-    /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument */
     const tx = await this.createPublicationBundleTransaction(dataItems)
 
     return {
-      bundleTxId: tx.id,
       primaryAssetTxId: primaryDataItems.original.id,
       primaryMetadataTxId: primaryDataItems.originalMetadata.id,
       tx
@@ -181,6 +179,7 @@ export default class AuthenticatedArtByCityPublications
   private async createPublicationBundleTransaction(items: DataItem[]) {
     const bundle = await bundleAndSignData(items, this.signer)
     const tx = await this.arweave.createTransaction({ data: bundle.getRaw() })
+
     tx.addTag('Client', '@artbycity/sdk')
     tx.addTag('Protocol', 'ArtByCity')
     tx.addTag('Bundle-Format', 'binary')

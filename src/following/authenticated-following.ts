@@ -1,7 +1,5 @@
 import Arweave from 'arweave'
-import { Tag, Warp } from 'warp-contracts'
-import { ArweaveSigner } from 'warp-arbundles'
-import { InjectedArweaveSigner, isSigner } from 'warp-contracts-plugin-deploy'
+import { ArweaveSigner, Tag } from 'arbundles'
 
 import { ArtByCityConfig } from '../config'
 import { getAddressFromSigner } from '../util/crypto'
@@ -17,20 +15,24 @@ export default class AuthenticatedArtByCityFollowing
 {
   constructor(
     protected readonly arweave: Arweave,
-    protected readonly warp: Warp,
+    // protected readonly warp: Warp,
     protected readonly config: ArtByCityConfig,
-    private readonly signer: ArweaveSigner | InjectedArweaveSigner
+    private readonly signer: ArweaveSigner //| InjectedArweaveSigner
   ) {
-    super(arweave, warp, config)
+    super(
+      arweave,
+      // warp,
+      config
+    )
   }
 
   async getOrCreate() {
     const owner = await getAddressFromSigner(this.signer)
     const contract = await this.getContract(owner)
 
-    if (contract) {
-      return contract.txId()
-    }
+    // if (contract) {
+    //   return contract.txId()
+    // }
 
     return await this.create()
   }
@@ -49,27 +51,33 @@ export default class AuthenticatedArtByCityFollowing
       following: opts.following || []
     }
 
-    const tags = (opts.tags || []).map<Tag>(tag => new Tag(tag.name, tag.value))
+    const tags = (opts.tags || []).map<Tag>(
+      tag => ({ name: tag.name, value: tag.value })
+    )
     tags.push(
-      new Tag('Protocol', 'ArtByCity'),
-      new Tag('Contract-Name', 'Following'),
-      new Tag('Contract-Version', '0.0.1'),
-      new Tag('Entity-Type', 'following')
+      { name: 'Protocol', value: 'ArtByCity' },
+      { name: 'Contract-Name', value: 'Following' },
+      { name: 'Contract-Version', value: '0.0.1' },
+      { name: 'Entity-Type', value: 'following' }
     )
 
-    const { contractTxId } = await this.warp.deployFromSourceTx({
-      /* @ts-expect-error warp types are spaghetti */
-      wallet: this.signer instanceof ArweaveSigner
-        /* @ts-expect-error gimme dat jwk */
-        ? this.signer.jwk
-        : this.signer,
-      srcTxId: this.config.contracts.following,
-      initState: JSON.stringify(initialState),
-      tags
-      /* @ts-expect-error warp types are spaghetti */
-    }, !isSigner(this.signer) || this.config.environment === 'development')
+    throw new Error(
+      'This feature is being reimplemented with AO and is not yet available'
+    )
 
-    return contractTxId
+    // const { contractTxId } = await this.warp.deployFromSourceTx({
+    //   /* @ts-expect-error warp types are spaghetti */
+    //   wallet: this.signer instanceof ArweaveSigner
+    //     /* @ts-expect-error gimme dat jwk */
+    //     ? this.signer.jwk
+    //     : this.signer,
+    //   srcTxId: this.config.contracts.following,
+    //   initState: JSON.stringify(initialState),
+    //   tags
+    //   /* @ts-expect-error warp types are spaghetti */
+    // }, !isSigner(this.signer) || this.config.environment === 'development')
+
+    // return contractTxId
   }
 
   async follow(address: string) {

@@ -1,4 +1,4 @@
-import { Tag } from 'warp-contracts'
+import { Tag } from 'arbundles'
 import { v4 as uuidv4 } from 'uuid'
 
 import { generateArFSFileTags } from '../../arfs'
@@ -16,20 +16,20 @@ export default class FileDataItemFactory {
     const fileId = uuidv4()
 
     const originalTags: Tag[] = [
-      new Tag('Content-Type', original.type),
-      new Tag('Metadata-Id', fileId),
+      { name: 'Content-Type', value: original.type },
+      { name: 'Metadata-Id', value: fileId },
       ...generateArtByCityTags()
     ]
     if (opts.thumbnail) {
-      originalTags.push(new Tag('Thumbnail', opts.thumbnail.original))
-      originalTags.push(new Tag('Thumbnail-Small', opts.thumbnail.small))
-      originalTags.push(new Tag('Thumbnail-Large', opts.thumbnail.large))
+      originalTags.push({ name: 'Thumbnail', value: opts.thumbnail.original })
+      originalTags.push({ name: 'Thumbnail-Small', value: opts.thumbnail.small })
+      originalTags.push({ name: 'Thumbnail-Large', value: opts.thumbnail.large })
     }
     if (opts.atomicAsset?.tags) {
       originalTags.push(...opts.atomicAsset.tags)
     }
     if (opts.relatedTo) {
-      originalTags.push(new Tag('Related-To', opts.relatedTo))
+      originalTags.push({ name: 'Related-To', value: opts.relatedTo })
     }
 
     const originalDataItem = await this.dataItemFactory.createAndSign(

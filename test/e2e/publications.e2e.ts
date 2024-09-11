@@ -2,7 +2,7 @@
 import('mocha') // NB: this style import makes both webpack and typescript happy
 import { expect } from 'chai'
 import Arweave from 'arweave'
-import { JWKInterface } from 'warp-contracts'
+import { JWKInterface } from 'arweave/node/lib/wallet'
 
 import TestweaveJWK from '../testweave-keyfile.json'
 import ArtByCity, { ArtByCityConfig } from '../../dist/web'

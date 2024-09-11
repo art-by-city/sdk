@@ -1,5 +1,5 @@
 import { DataItem } from 'arbundles'
-import { Tag } from 'warp-contracts'
+import { Tag } from 'arbundles'
 
 import { ArFSOpts } from '../../arfs'
 import DataItemFactory from '../../common/data-item'

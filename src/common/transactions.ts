@@ -3,8 +3,7 @@ import ArDB from 'ardb'
 import ArdbTransaction from 'ardb/lib/models/transaction'
 import Arweave from 'arweave'
 import axios from 'axios'
-import { ArweaveSigner } from 'warp-arbundles'
-import { InjectedArweaveSigner } from 'warp-contracts-plugin-deploy'
+import { ArweaveSigner } from 'arbundles'
 
 import { MemoryCache } from '../cache'
 
@@ -27,7 +26,7 @@ export default class TransactionsModule {
 
   async dispatch(
     item: DataItem,
-    signer: ArweaveSigner | InjectedArweaveSigner
+    signer: ArweaveSigner //| InjectedArweaveSigner
   ) {
     await item.sign(signer)
 
@@ -50,8 +49,7 @@ export default class TransactionsModule {
       await this.arweave.transactions.sign(
         tx,
         signer instanceof ArweaveSigner
-          /* @ts-expect-error signer types */
-          ? signer.jwk
+          ? (signer as any).jwk
           : 'use_wallet'
       )
 

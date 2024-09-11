@@ -4,7 +4,7 @@ import sinon from 'sinon'
 import Arweave from 'arweave'
 import ArweaveApi from 'arweave/node/lib/api'
 import NodeCryptoDriver from 'arweave/node/lib/crypto/node-driver'
-import { ArweaveSigner } from 'warp-arbundles'
+import { ArweaveSigner } from 'arbundles'
 import axios from 'axios'
 
 import { ArFSClient, AuthenticatedArFSClient } from '../../src/arfs'
@@ -29,7 +29,7 @@ describe('ArFS Module', () => {
       crypto: mockNodeCryptoDriver
     })
     arweaveApiMock.getConfig.returns({
-      protocol: 'https',
+      protocol: 'http',
       host: 'localhost',
       port: 1984
     })

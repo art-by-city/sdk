@@ -1,10 +1,12 @@
-import { Tag } from 'warp-contracts'
 import { PublicationOptions } from '../publications'
+
+const AOS_MODULE_ID = 'cbn0KKrBZH7hdNkNokuXLtGryrWM--PjSTBqIzw9Kkk'
+const SCHEDULER_ID = '_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA'
 
 export function generateArtByCityTags() {
   return [
-    new Tag('Protocol', 'ArtByCity'),
-    new Tag('Client', '@artbycity/sdk')
+    { name: 'Protocol', value: 'ArtByCity' },
+    { name: 'Client', value: '@artbycity/sdk' }
   ]
 }
 
@@ -14,12 +16,14 @@ export function generateAns110Tags(
   opts: PublicationOptions
 ) {
   const tags = [
-    new Tag('Title', opts.title.substring(0, 150)),
-    new Tag('Type', opts.type)
+    { name: 'Title', value: opts.title.substring(0, 150) },
+    { name: 'Type', value: opts.type }
   ]
 
   if (opts.description) {
-    tags.push(new Tag('Description', opts.description.substring(0, 300)))
+    tags.push(
+      { name: 'Description', value: opts.description.substring(0, 300) }
+    )
   }
 
   const topics: Topic[] = []
@@ -34,8 +38,8 @@ export function generateAns110Tags(
   }
 
   tags.push(...topics.map(topic => topic.name
-    ? new Tag(`Topic:${topic.name}`, topic.value)
-    : new Tag('Topic', topic.value)
+    ? { name: `Topic:${topic.name}`, value: topic.value }
+    : { name: 'Topic', value: topic.value }
   ))
 
   return tags
@@ -46,14 +50,14 @@ export function generateRelatedToTags(
   width?: string,
   height?: string
 ) {
-  const tags = [new Tag('Related-To', relatedTo)]
+  const tags = [{ name: 'Related-To', value: relatedTo }]
 
   if (width) {
-    tags.push(new Tag('Width', width))
+    tags.push({ name: 'Width', value: width })
   }
 
   if (height) {
-    tags.push(new Tag('Height', height))
+    tags.push({ name: 'Height', value: height })
   }
 
   return tags
@@ -64,10 +68,19 @@ export function generateAtomicLicenseTags(
   initState: string
 ) {
   return [
-    new Tag('App-Name', 'SmartWeaveContract'),
-    new Tag('App-Version', '0.3.0'),
-    new Tag('Contract-Src', contractSrcId),
-    new Tag('Init-State', initState)
+    // SmartWeave Contract Atomic License Tags
+    { name: 'App-Name', value: 'SmartWeaveContract' },
+    { name: 'App-Version', value: '0.3.0' },
+    { name: 'Contract-Src', value: contractSrcId },
+    { name: 'Init-State', value: initState },
+
+    // AO Process Atomic License Tags
+    { name: 'Data-Protocol', value: 'ao' },
+    { name: 'Variant', value: 'ao.TN.1' },
+    { name: 'Type', value: 'Process' },
+    { name: 'Module', value: AOS_MODULE_ID },
+    { name: 'Scheduler', value: SCHEDULER_ID },
+    { name: 'SDK', value: '@artbycity/sdk' }
   ]
 }
 
@@ -85,7 +98,7 @@ export function generatePrimaryAssetTags(
   ]
 
   if (opts.slug) {
-    tags.push(new Tag('Slug', opts.slug))
+    tags.push({ name: 'Slug', value: opts.slug })
   }
 
   return tags
